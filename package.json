@@ -6,7 +6,8 @@
     "start": "next start",
     "supabase": "supabase start",
     "stop": "supabase stop",
-    "dbreset": "supabase db reset --debug"
+    "dbreset": "supabase db reset --debug",
+    "vercel": "vercel"
   },
   "dependencies": {
     "@supabase/ssr": "^0.3.0",
@@ -25,6 +26,7 @@
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "encoding": "^0.1.13",
-    "supabase": "^1.178.2"
+    "supabase": "^1.178.2",
+    "vercel": "^34.2.7"
   }
 }
