@@ -7,16 +7,27 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Tables } from "@/types/supabase";
 
 type IconProps = React.ComponentProps<"svg">;
 
-export function PresentationDashboard() {
+export function PresentationDashboard({
+  presentations,
+  userId,
+}: {
+  presentations: Tables<"presentations">[];
+  userId: string;
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => {
     setIsModalOpen(true);
   };
   const closeModal = () => {
     setIsModalOpen(false);
+  };
+
+  const createPresentation = async () => {
+    closeModal();
   };
 
   return (
@@ -29,20 +40,31 @@ export function PresentationDashboard() {
           </Button>
         </header>
         <section className="mt-6">
-          <Card className="flex items-center justify-between p-4 bg-gray-800">
-            <div className="flex items-center space-x-4">
-              <PresentationIcon className="w-6 h-6 text-gray-400" />
-              <div>
-                <h3 className="font-semibold text-white">sample #1743584</h3>
-                <p className="text-gray-400">13 - 19 Jun 2024</p>
+          {presentations.map((presentation) => (
+            <Card
+              key={presentation.id}
+              className="flex items-center justify-between p-4 bg-gray-800"
+            >
+              <div className="flex items-center space-x-4">
+                <PresentationIcon className="w-6 h-6 text-gray-400" />
+                <div>
+                  <h3 className="font-semibold text-white">
+                    {presentation.title}
+                  </h3>
+                  <p className="text-gray-400">
+                    {new Date(presentation.start_time).toLocaleDateString(
+                      "en-CA"
+                    )}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <ScreenShareIcon className="w-6 h-6 text-gray-400" />
-              <SmartphoneIcon className="w-6 h-6 text-gray-400" />
-              <ExpandIcon className="w-6 h-6 text-gray-400" />
-            </div>
-          </Card>
+              <div className="flex items-center space-x-4">
+                <ScreenShareIcon className="w-6 h-6 text-gray-400" />
+                <SmartphoneIcon className="w-6 h-6 text-gray-400" />
+                <ExpandIcon className="w-6 h-6 text-gray-400" />
+              </div>
+            </Card>
+          ))}
         </section>
       </main>
       {isModalOpen && (
@@ -75,7 +97,12 @@ export function PresentationDashboard() {
               <Button variant="outline" onClick={closeModal}>
                 Cancel
               </Button>
-              <Button className="ml-2 bg-green-600">Create</Button>
+              <Button
+                className="ml-2 bg-green-600"
+                onClick={createPresentation}
+              >
+                Create
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

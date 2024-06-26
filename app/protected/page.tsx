@@ -2,16 +2,27 @@ import AuthButton from "@/components/AuthButton";
 import { PresentationDashboard } from "@/components/PresentationDashboard";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import type { Tables } from "@/types/supabase";
 
 export default async function ProtectedPage() {
   const supabase = createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
     return redirect("/login");
+  }
+
+  const { data: presentations, error } = await supabase
+    .from("presentations")
+    .select("*")
+    .eq("speaker_id", "1")
+    .returns<Tables<"presentations">[]>();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Failed to fetch presentations");
   }
 
   return (
@@ -23,7 +34,7 @@ export default async function ProtectedPage() {
             <AuthButton />
           </div>
         </nav>
-        <PresentationDashboard />
+        <PresentationDashboard presentations={presentations} userId={user.id} />
       </div>
     </div>
   );
