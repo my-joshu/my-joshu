@@ -8,15 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tables } from "@/types/supabase";
+import { createPresentation } from "@/app/dashboard/actions";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { formatUtcToLocaleTimezone } from "@/utils/date";
 
 type IconProps = React.ComponentProps<"svg">;
 
 export function PresentationDashboard({
   presentations,
-  userId,
+  speakerId,
 }: {
   presentations: Tables<"presentations">[];
-  userId: string;
+  speakerId: number;
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => {
@@ -25,8 +28,15 @@ export function PresentationDashboard({
   const closeModal = () => {
     setIsModalOpen(false);
   };
+  const createPresentationWithSpeakerId = createPresentation.bind(
+    null,
+    speakerId
+  );
+  const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
 
-  const createPresentation = async () => {
+    createPresentationWithSpeakerId(formData);
     closeModal();
   };
 
@@ -52,9 +62,7 @@ export function PresentationDashboard({
                     {presentation.title}
                   </h3>
                   <p className="text-gray-400">
-                    {new Date(presentation.start_time).toLocaleDateString(
-                      "en-CA"
-                    )}
+                    {formatUtcToLocaleTimezone(presentation.start_time)}
                   </p>
                 </div>
               </div>
@@ -70,40 +78,53 @@ export function PresentationDashboard({
       {isModalOpen && (
         <Dialog open={isModalOpen} onOpenChange={closeModal}>
           <DialogContent>
-            <div className="p-4">
-              <h2 className="text-xl font-semibold mb-4">Create Slido</h2>
-              <div className="grid gap-4">
-                <div>
-                  <Label htmlFor="title">Title</Label>
-                  <Input id="title" placeholder="Enter title" />
-                </div>
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" placeholder="Enter description" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={submitHandler}>
+              <DialogTitle className="text-xl font-semibold mb-4">
+                Create Presentation
+              </DialogTitle>
+              <div className="p-4">
+                <div className="grid gap-4">
                   <div>
-                    <Label htmlFor="startTime">Start Time</Label>
-                    <Input id="startTime" type="datetime-local" />
+                    <Label htmlFor="title">Title</Label>
+                    <Input id="title" name="title" placeholder="Enter title" />
                   </div>
                   <div>
-                    <Label htmlFor="endTime">End Time</Label>
-                    <Input id="endTime" type="datetime-local" />
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      placeholder="Enter description"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="startTime">Start Time</Label>
+                      <Input
+                        id="startTime"
+                        name="startTime"
+                        type="datetime-local"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="endTime">End Time</Label>
+                      <Input
+                        id="endTime"
+                        name="endTime"
+                        type="datetime-local"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="flex justify-end mt-4">
-              <Button variant="outline" onClick={closeModal}>
-                Cancel
-              </Button>
-              <Button
-                className="ml-2 bg-green-600"
-                onClick={createPresentation}
-              >
-                Create
-              </Button>
-            </div>
+              <div className="flex justify-end mt-4">
+                <Button variant="outline" onClick={closeModal}>
+                  Cancel
+                </Button>
+                <Button className="ml-2 bg-green-600" type="submit">
+                  Create
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       )}
