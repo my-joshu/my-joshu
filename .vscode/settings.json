@@ -6,5 +6,5 @@
   "prettier.jsxSingleQuote": false,
   // Spell Checker
   "cSpell.enabled": true,
-  "cSpell.words": ["supabase"]
+  "cSpell.words": ["supabase", "qrcode"]
 }
