@@ -13,7 +13,7 @@ const initialState = {
   message: "",
 };
 
-type FormActionType = typeof initialState;
+type FormStateType = typeof initialState;
 type IconProps = React.ComponentProps<"svg">;
 
 export function QASession({
@@ -22,9 +22,9 @@ export function QASession({
 }: {
   serverQuestions: Tables<"questions">[];
   createQuestionBoundArgs: (
-    prevState: FormActionType,
+    prevState: FormStateType,
     formData: FormData
-  ) => Promise<FormActionType>;
+  ) => Promise<FormStateType>;
 }) {
   const [state, formAction] = useFormState(
     createQuestionBoundArgs,
