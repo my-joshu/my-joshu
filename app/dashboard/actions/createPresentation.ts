@@ -41,9 +41,11 @@ export async function createPresentation(
     }
 
     const supabase = createClient();
-    const user = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!user.data.user) {
+    if (!user || user.is_anonymous) {
       throw new Error("You must be logged in to create a presentation");
     }
 
