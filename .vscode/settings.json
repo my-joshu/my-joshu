@@ -1,0 +1,10 @@
+{
+  // Formatter
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "prettier.singleQuote": false,
+  "prettier.jsxSingleQuote": false,
+  // Spell Checker
+  "cSpell.enabled": true,
+  "cSpell.words": ["supabase", "qrcode"]
+}
