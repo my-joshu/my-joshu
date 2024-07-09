@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { parseISO } from "date-fns";
 import { Tables } from "@/types/supabase";
+import { generateQR } from "@/utils/qrCode";
 
 const presentationSchema = z.object({
   speakerId: z.number(),
@@ -62,12 +63,23 @@ export async function createPresentation(
         start_time: startTime,
         end_time: endTime,
       })
-      .select()
-      .returns<Tables<"presentations">>();
+      .select("*")
+      .returns<Tables<"presentations">[]>();
 
     if (error) {
       throw error;
     }
+    const presentation = data[0];
+
+    // NOTE: This URL is to be able to join the presentation for audience
+    const presentationUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/anonymous?presentationId=${presentation.id}`;
+    const qrCode = await generateQR(presentationUrl)
+
+    await supabase
+      .from("presentations")
+      .update({ qr_code: qrCode })
+      .eq("id", presentation.id);
+
     console.log("Created presentation:", data);
   } catch (error) {
     console.error("Error creating presentation:", error);
