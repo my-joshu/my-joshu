@@ -1,10 +1,9 @@
-import AuthButton from "@/components/AuthButton";
 import { PresentationDashboard } from "@/components/PresentationDashboard";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import type { Tables } from "@/types/supabase";
 
-export default async function DashboardPage() {
+export default async function PresentationsPage() {
   const supabase = createClient();
   const {
     data: { user },
@@ -36,19 +35,9 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-20 items-center">
-      <div className="w-full">
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-4xl flex justify-between items-center p-3 text-sm">
-            <p className="font-bold text-lg">MyJoshu</p>
-            <AuthButton />
-          </div>
-        </nav>
-        <PresentationDashboard
-          presentations={presentations}
-          speakerId={speaker.id}
-        />
-      </div>
-    </div>
+    <PresentationDashboard
+      presentations={presentations}
+      speakerId={speaker.id}
+    />
   );
 }

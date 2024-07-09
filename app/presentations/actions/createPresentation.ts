@@ -85,6 +85,6 @@ export async function createPresentation(
     throw error;
   }
 
-  revalidatePath("/dashboard");
-  redirect("/dashboard");
+  revalidatePath("/presentations");
+  redirect("/presentations");
 }
