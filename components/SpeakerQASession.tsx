@@ -177,7 +177,7 @@ export default function SpeakerQASession({
                       >
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger>
+                            <TooltipTrigger asChild>
                               <RefreshCcwIcon className="w-4 h-4" />
                             </TooltipTrigger>
                             <TooltipContent className="p-2 bg-gray-800 dark:bg-gray-900 rounded-md shadow-md">
