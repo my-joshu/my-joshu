@@ -8,6 +8,7 @@ export default async function LiveQuestions({
 }: {
   params: { presentationId: string };
 }) {
+  const { presentationId } = params;
   const supabase = createClient();
 
   const {
@@ -31,7 +32,7 @@ export default async function LiveQuestions({
   const { data: presentation } = await supabase
     .from("presentations")
     .select("*")
-    .eq("id", params.presentationId)
+    .eq("id", presentationId)
     .single<Tables<"presentations">>();
 
   if (!presentation) {
@@ -46,12 +47,13 @@ export default async function LiveQuestions({
 
   const createQuestionBoundArgs = createQuestion.bind(
     null,
-    Number(params.presentationId),
+    Number(presentationId),
     attendee.id
   );
 
   return (
     <QASession
+      presentationId={presentationId}
       serverQuestions={questions ?? []}
       createQuestionBoundArgs={createQuestionBoundArgs}
     />

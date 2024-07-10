@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useFormState } from "react-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tables } from "@/types/supabase";
-import { useFormState } from "react-dom";
+import { createClient } from "@/utils/supabase/client";
 
 // NOTE: Use resetKey to reset input form by server actions: https://github.com/vercel/next.js/discussions/58448#discussioncomment-8459474
 const initialState = {
@@ -17,9 +18,11 @@ type FormStateType = typeof initialState;
 type IconProps = React.ComponentProps<"svg">;
 
 export function QASession({
+  presentationId,
   serverQuestions,
   createQuestionBoundArgs,
 }: {
+  presentationId: string;
   serverQuestions: Tables<"questions">[];
   createQuestionBoundArgs: (
     prevState: FormStateType,
@@ -32,8 +35,31 @@ export function QASession({
   );
   const [questions, setQuestions] = useState(serverQuestions);
 
-  // TODO Integrate Supabase realtime to update setQuestions
-  // useEffect(() => {}, []);
+  useEffect(() => {
+    const supabase = createClient();
+
+    const realtimeChannel = supabase
+      .channel("schema-db-changes")
+      .on(
+        "postgres_changes",
+        {
+          schema: "public",
+          event: "INSERT",
+          table: "questions",
+          filter: `presentation_id=eq.${presentationId}`,
+        },
+        (payload) => {
+          const newQuestion = payload.new as Tables<"questions">;
+          setQuestions((prevState) => [...prevState, newQuestion]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(realtimeChannel);
+    };
+  }, []);
+
   // TODO Show error message for input form
 
   return (
