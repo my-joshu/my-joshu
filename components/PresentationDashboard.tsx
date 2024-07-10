@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tables } from "@/types/supabase";
-import { createPresentation } from "@/app/dashboard/actions";
+import { createPresentation } from "@/app/presentations/actions";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { formatUtcToLocaleTimezone } from "@/utils/date";
+import Link from "next/link";
 
 type IconProps = React.ComponentProps<"svg">;
 
@@ -51,27 +52,29 @@ export function PresentationDashboard({
         </header>
         <section className="mt-6">
           {presentations.map((presentation) => (
-            <Card
+            <Link
               key={presentation.id}
-              className="flex items-center justify-between p-4 bg-gray-800"
+              href={`/presentations/${presentation.id}`}
             >
-              <div className="flex items-center space-x-4">
-                <PresentationIcon className="w-6 h-6 text-gray-400" />
-                <div>
-                  <h3 className="font-semibold text-white">
-                    {presentation.title}
-                  </h3>
-                  <p className="text-gray-400">
-                    {formatUtcToLocaleTimezone(presentation.start_time)}
-                  </p>
+              <Card className="flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-700">
+                <div className="flex items-center space-x-4">
+                  <PresentationIcon className="w-6 h-6 text-gray-400" />
+                  <div>
+                    <h3 className="font-semibold text-white">
+                      {presentation.title}
+                    </h3>
+                    <p className="text-gray-400">
+                      {formatUtcToLocaleTimezone(presentation.start_time)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <ScreenShareIcon className="w-6 h-6 text-gray-400" />
-                <SmartphoneIcon className="w-6 h-6 text-gray-400" />
-                <ExpandIcon className="w-6 h-6 text-gray-400" />
-              </div>
-            </Card>
+                <div className="flex items-center space-x-4">
+                  <ScreenShareIcon className="w-6 h-6 text-gray-400" />
+                  <SmartphoneIcon className="w-6 h-6 text-gray-400" />
+                  <ExpandIcon className="w-6 h-6 text-gray-400" />
+                </div>
+              </Card>
+            </Link>
           ))}
         </section>
       </main>

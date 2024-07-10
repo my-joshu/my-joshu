@@ -61,7 +61,10 @@ export function QASession({
       <p aria-live="polite" className="sr-only">
         {state.message}
       </p>
-      <div className="space-y-4">
+      <div
+        className="space-y-4 overflow-y-auto hover:overflow-y-scroll"
+        style={{ maxHeight: "calc(100vh - 200px)" }}
+      >
         {questions.map((q) => (
           <Card key={q.uuid}>
             <CardContent>
