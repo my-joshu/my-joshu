@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { parseISO } from "date-fns";
 import { Tables } from "@/types/supabase";
+import { generateQR } from "@/utils/qrCode";
 
 const presentationSchema = z.object({
   speakerId: z.number(),
@@ -53,7 +54,7 @@ export async function createPresentation(
     const endTime = formData.get("endTime")
       ? parseISO(formData.get("endTime") as string)
       : null;
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("presentations")
       .insert({
         speaker_id: speakerId,
@@ -62,12 +63,22 @@ export async function createPresentation(
         start_time: startTime,
         end_time: endTime,
       })
-      .select()
-      .returns<Tables<"presentations">>();
+      .select("*")
+      .single<Tables<"presentations">>();
 
-    if (error) {
-      throw error;
+    if (!data) {
+      throw new Error("Failed to create presentation");
     }
+
+    // NOTE: This URL is to be able to join the presentation for audience
+    const presentationUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/anonymous?presentationId=${data.id}`;
+    const qrCode = await generateQR(presentationUrl)
+
+    await supabase
+      .from("presentations")
+      .update({ qr_code: qrCode })
+      .eq("id", data.id);
+
     console.log("Created presentation:", data);
   } catch (error) {
     console.error("Error creating presentation:", error);
