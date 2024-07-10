@@ -7,6 +7,7 @@ export default async function PresentationPage({
 }: {
   params: { presentationId: string };
 }) {
+  const { presentationId } = params;
   const supabase = createClient();
   const {
     data: { user },
@@ -19,7 +20,7 @@ export default async function PresentationPage({
   const { data: presentation } = await supabase
     .from("presentations")
     .select("*")
-    .eq("id", params.presentationId)
+    .eq("id", presentationId)
     .single<Tables<"presentations">>();
 
   if (!presentation) {
@@ -34,7 +35,8 @@ export default async function PresentationPage({
 
   return (
     <SpeakerQASession
-      questions={questions || []}
+      presentationId={presentationId}
+      serverQuestions={questions || []}
       qrCode={presentation.qr_code}
     />
   );

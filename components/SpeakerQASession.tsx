@@ -12,12 +12,15 @@ import {
 import { useEffect, useState } from "react";
 import type { Tables } from "@/types/supabase";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export default function SpeakerQASession({
-  questions,
+  presentationId,
+  serverQuestions,
   qrCode,
 }: {
-  questions: Tables<"questions">[];
+  presentationId: string;
+  serverQuestions: Tables<"questions">[];
   qrCode: string | null;
 }) {
   const router = useRouter();
@@ -26,11 +29,10 @@ export default function SpeakerQASession({
   );
   const [hints, setHints] = useState<{ [key: number]: string[] }>({});
   const [activeCardId, setActiveCardId] = useState<number | null>(null);
-
-  const questionContents = questions.map((q) => q.content);
+  const [questions, setQuestions] = useState(serverQuestions);
 
   function generateHintsForQuestion(questionId: number) {
-    const questionContent = questionContents[questionId];
+    const questionContent = questions[questionId].content;
     return Array.from(
       { length: 3 },
       (_, i) => `Hint ${i + 1} for '${questionContent}'`
@@ -48,6 +50,31 @@ export default function SpeakerQASession({
   const handleCardClick = (questionId: number) => {
     setActiveCardId(questionId);
   };
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const realtimeChannel = supabase
+      .channel("schema-db-changes")
+      .on(
+        "postgres_changes",
+        {
+          schema: "public",
+          event: "INSERT",
+          table: "questions",
+          filter: `presentation_id=eq.${presentationId}`,
+        },
+        (payload) => {
+          const newQuestion = payload.new as Tables<"questions">;
+          setQuestions((prevState) => [...prevState, newQuestion]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(realtimeChannel);
+    };
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-900 w-full flex-col">
@@ -83,7 +110,7 @@ export default function SpeakerQASession({
               {selectedQuestionId !== null && (
                 <>
                   <h4 className="text-lg font-medium">
-                    {questionContents[selectedQuestionId]}
+                    {questions[selectedQuestionId].content}
                   </h4>
                   {hints[selectedQuestionId]?.map((hint, i) => (
                     <p key={i}>{hint}</p>
@@ -126,9 +153,9 @@ export default function SpeakerQASession({
               className="space-y-4 overflow-y-auto hover:overflow-y-scroll"
               style={{ maxHeight: "calc(100vh - 200px)" }}
             >
-              {questionContents.map((question, idx) => (
+              {questions.map((question, idx) => (
                 <Card
-                  key={idx}
+                  key={question.uuid}
                   className={
                     activeCardId === idx
                       ? "border-blue-500"
@@ -138,7 +165,9 @@ export default function SpeakerQASession({
                   <CardContent onClick={() => handleCardClick(idx)}>
                     <div className="flex items-center justify-between">
                       <div className="prose">
-                        <p className="pt-4 break-words text-lg">{question}</p>
+                        <p className="pt-4 break-words text-lg">
+                          {question.content}
+                        </p>
                       </div>
                       <Button
                         variant="ghost"
