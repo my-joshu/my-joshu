@@ -1,18 +1,24 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { RefreshCcwIcon } from "lucide-react";
+import {
+  REALTIME_LISTEN_TYPES,
+  REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
+} from "@supabase/supabase-js";
+
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useEffect, useState } from "react";
-import type { Tables } from "@/types/supabase";
-import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Tables } from "@/types/supabase";
 import { createClient } from "@/utils/supabase/client";
+import { createQuestionsInsertChannelName } from "@/utils/channelName";
 
 export default function SpeakerQASession({
   presentationId,
@@ -51,16 +57,17 @@ export default function SpeakerQASession({
     setActiveCardId(questionId);
   };
 
+  // Listen for new questions in real-time
   useEffect(() => {
     const supabase = createClient();
 
     const realtimeChannel = supabase
-      .channel("schema-db-changes")
+      .channel(createQuestionsInsertChannelName(presentationId))
       .on(
-        "postgres_changes",
+        REALTIME_LISTEN_TYPES.POSTGRES_CHANGES,
         {
           schema: "public",
-          event: "INSERT",
+          event: REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.INSERT,
           table: "questions",
           filter: `presentation_id=eq.${presentationId}`,
         },
@@ -71,6 +78,7 @@ export default function SpeakerQASession({
       )
       .subscribe();
 
+    // Cleanup function to remove the channel when the component unmounts
     return () => {
       supabase.removeChannel(realtimeChannel);
     };
