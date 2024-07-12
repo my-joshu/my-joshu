@@ -73,7 +73,7 @@ export default function SpeakerQASession({
         },
         (payload) => {
           const newQuestion = payload.new as Tables<"questions">;
-          setQuestions((prevState) => [...prevState, newQuestion]);
+          setQuestions((prevState) => [newQuestion, ...prevState]);
         }
       )
       .subscribe();

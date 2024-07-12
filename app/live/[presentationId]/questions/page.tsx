@@ -43,6 +43,7 @@ export default async function LiveQuestions({
     .from("questions")
     .select("*")
     .eq("presentation_id", presentation.id)
+    .order("created_at", { ascending: false })
     .returns<Tables<"questions">[]>();
 
   const createQuestionBoundArgs = createQuestion.bind(

@@ -31,6 +31,7 @@ export default async function PresentationPage({
     .from("questions")
     .select("*")
     .eq("presentation_id", presentation.id)
+    .order("created_at", { ascending: false })
     .returns<Tables<"questions">[]>();
 
   return (
