@@ -12,6 +12,8 @@ import {
 import { useEffect, useState } from "react";
 import type { Tables } from "@/types/supabase";
 import { useRouter } from "next/navigation";
+import { GoogleGenerativeAI, ModelParams } from "@google/generative-ai";
+import OpenAI from "openai";
 
 export default function SpeakerQASession({
   questions,
@@ -29,7 +31,38 @@ export default function SpeakerQASession({
 
   const questionContents = questions.map((q) => q.content);
 
+  async function geminiRun() {
+    const genAI = new GoogleGenerativeAI(
+      process.env.NEXT_PUBLIC_GEMINI_API_KEY!
+    );
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = "Write a story about a AI and magic";
+
+    const result = await model.generateContent(prompt);
+
+    console.log("text", result.response.text());
+    console.log("candidates", result.response.candidates);
+  }
+
+  async function openAiRun() {
+    const openai = new OpenAI({
+      organization: "org-XCZJpnHphmKP1jbUeF6nkNoP",
+      project: "$PROJECT_ID",
+    });
+
+    const stream = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: "Say this is a test" }],
+      stream: true,
+    });
+    for await (const chunk of stream) {
+      process.stdout.write(chunk.choices[0]?.delta?.content || "");
+    }
+  }
+
   function generateHintsForQuestion(questionId: number) {
+    geminiRun();
     const questionContent = questionContents[questionId];
     return Array.from(
       { length: 3 },
