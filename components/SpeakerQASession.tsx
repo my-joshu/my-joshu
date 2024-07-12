@@ -1,23 +1,32 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { RefreshCcwIcon } from "lucide-react";
+import {
+  REALTIME_LISTEN_TYPES,
+  REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
+} from "@supabase/supabase-js";
+
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useEffect, useState } from "react";
-import type { Tables } from "@/types/supabase";
-import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Tables } from "@/types/supabase";
+import { createClient } from "@/utils/supabase/client";
+import { createQuestionsInsertChannelName } from "@/utils/channelName";
 
 export default function SpeakerQASession({
-  questions,
+  presentationId,
+  serverQuestions,
   qrCode,
 }: {
-  questions: Tables<"questions">[];
+  presentationId: string;
+  serverQuestions: Tables<"questions">[];
   qrCode: string | null;
 }) {
   const router = useRouter();
@@ -26,11 +35,10 @@ export default function SpeakerQASession({
   );
   const [hints, setHints] = useState<{ [key: number]: string[] }>({});
   const [activeCardId, setActiveCardId] = useState<number | null>(null);
-
-  const questionContents = questions.map((q) => q.content);
+  const [questions, setQuestions] = useState(serverQuestions);
 
   function generateHintsForQuestion(questionId: number) {
-    const questionContent = questionContents[questionId];
+    const questionContent = questions[questionId].content;
     return Array.from(
       { length: 3 },
       (_, i) => `Hint ${i + 1} for '${questionContent}'`
@@ -48,6 +56,33 @@ export default function SpeakerQASession({
   const handleCardClick = (questionId: number) => {
     setActiveCardId(questionId);
   };
+
+  // Listen for new questions in real-time
+  useEffect(() => {
+    const supabase = createClient();
+
+    const realtimeChannel = supabase
+      .channel(createQuestionsInsertChannelName(presentationId))
+      .on(
+        REALTIME_LISTEN_TYPES.POSTGRES_CHANGES,
+        {
+          schema: "public",
+          event: REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.INSERT,
+          table: "questions",
+          filter: `presentation_id=eq.${presentationId}`,
+        },
+        (payload) => {
+          const newQuestion = payload.new as Tables<"questions">;
+          setQuestions((prevState) => [newQuestion, ...prevState]);
+        }
+      )
+      .subscribe();
+
+    // Cleanup function to remove the channel when the component unmounts
+    return () => {
+      supabase.removeChannel(realtimeChannel);
+    };
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-900 w-full flex-col">
@@ -83,7 +118,7 @@ export default function SpeakerQASession({
               {selectedQuestionId !== null && (
                 <>
                   <h4 className="text-lg font-medium">
-                    {questionContents[selectedQuestionId]}
+                    {questions[selectedQuestionId].content}
                   </h4>
                   {hints[selectedQuestionId]?.map((hint, i) => (
                     <p key={i}>{hint}</p>
@@ -126,9 +161,9 @@ export default function SpeakerQASession({
               className="space-y-4 overflow-y-auto hover:overflow-y-scroll"
               style={{ maxHeight: "calc(100vh - 200px)" }}
             >
-              {questionContents.map((question, idx) => (
+              {questions.map((question, idx) => (
                 <Card
-                  key={idx}
+                  key={question.uuid}
                   className={
                     activeCardId === idx
                       ? "border-blue-500"
@@ -138,7 +173,9 @@ export default function SpeakerQASession({
                   <CardContent onClick={() => handleCardClick(idx)}>
                     <div className="flex items-center justify-between">
                       <div className="prose">
-                        <p className="pt-4 break-words text-lg">{question}</p>
+                        <p className="pt-4 break-words text-lg">
+                          {question.content}
+                        </p>
                       </div>
                       <Button
                         variant="ghost"
@@ -148,7 +185,7 @@ export default function SpeakerQASession({
                       >
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger>
+                            <TooltipTrigger asChild>
                               <RefreshCcwIcon className="w-4 h-4" />
                             </TooltipTrigger>
                             <TooltipContent className="p-2 bg-gray-800 dark:bg-gray-900 rounded-md shadow-md">

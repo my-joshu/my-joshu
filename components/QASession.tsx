@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useFormState } from "react-dom";
+import {
+  REALTIME_LISTEN_TYPES,
+  REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
+} from "@supabase/supabase-js";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tables } from "@/types/supabase";
-import { useFormState } from "react-dom";
+import { createClient } from "@/utils/supabase/client";
+import { createQuestionsInsertChannelName } from "@/utils/channelName";
 
 // NOTE: Use resetKey to reset input form by server actions: https://github.com/vercel/next.js/discussions/58448#discussioncomment-8459474
 const initialState = {
@@ -17,9 +24,11 @@ type FormStateType = typeof initialState;
 type IconProps = React.ComponentProps<"svg">;
 
 export function QASession({
+  presentationId,
   serverQuestions,
   createQuestionBoundArgs,
 }: {
+  presentationId: string;
   serverQuestions: Tables<"questions">[];
   createQuestionBoundArgs: (
     prevState: FormStateType,
@@ -32,8 +41,33 @@ export function QASession({
   );
   const [questions, setQuestions] = useState(serverQuestions);
 
-  // TODO Integrate Supabase realtime to update setQuestions
-  // useEffect(() => {}, []);
+  // Listen for new questions in real-time
+  useEffect(() => {
+    const supabase = createClient();
+
+    const realtimeChannel = supabase
+      .channel(createQuestionsInsertChannelName(presentationId))
+      .on(
+        REALTIME_LISTEN_TYPES.POSTGRES_CHANGES,
+        {
+          schema: "public",
+          event: REALTIME_POSTGRES_CHANGES_LISTEN_EVENT.INSERT,
+          table: "questions",
+          filter: `presentation_id=eq.${presentationId}`,
+        },
+        (payload) => {
+          const newQuestion = payload.new as Tables<"questions">;
+          setQuestions((prevState) => [newQuestion, ...prevState]);
+        }
+      )
+      .subscribe();
+
+    // Cleanup function to remove the channel when the component unmounts
+    return () => {
+      supabase.removeChannel(realtimeChannel);
+    };
+  }, []);
+
   // TODO Show error message for input form
 
   return (

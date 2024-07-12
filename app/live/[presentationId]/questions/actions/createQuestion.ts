@@ -33,6 +33,7 @@ async function validateInput(
   return validationResult.data;
 }
 
+// Note: Supabase Realtime updates the new question within useEffect on the client side
 export async function createQuestion(
   presentationId: number,
   attendeeId: number,
@@ -67,16 +68,15 @@ export async function createQuestion(
         content,
       })
       .select()
-      .returns<Tables<"questions">[]>();
+      .single<Tables<"questions">>();
 
     if (error) {
       throw new Error("Poor internet communication");
     }
-    // TODO Integrate Supabase realtime to update Q&A list
 
     return {
-      resetKey: data[0].uuid,
-      message: `Created question ${data[0].content}`,
+      resetKey: data.uuid,
+      message: `Created question ${data.content}`,
     };
   } catch (error) {
     let message = "Failed to create question";
