@@ -12,8 +12,6 @@ import {
 import { useEffect, useState } from "react";
 import type { Tables } from "@/types/supabase";
 import { useRouter } from "next/navigation";
-import { GoogleGenerativeAI, ModelParams } from "@google/generative-ai";
-import OpenAI from "openai";
 
 export default function SpeakerQASession({
   questions,
@@ -32,37 +30,30 @@ export default function SpeakerQASession({
   const questionContents = questions.map((q) => q.content);
 
   async function geminiRun() {
-    const genAI = new GoogleGenerativeAI(
-      process.env.NEXT_PUBLIC_GEMINI_API_KEY!
-    );
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    const prompt = "Write a story about a AI and magic";
-
-    const result = await model.generateContent(prompt);
-
-    console.log("text", result.response.text());
-    console.log("candidates", result.response.candidates);
+    console.log("geminiRun");
+    const response = await fetch("/api/gemini");
+    const result = await response.json();
+    console.log("result", result);
   }
 
   async function openAiRun() {
-    const openai = new OpenAI({
-      organization: "org-XCZJpnHphmKP1jbUeF6nkNoP",
-      project: "$PROJECT_ID",
-    });
+    console.log("openAiRun");
+    const response = await fetch("/api/openai");
+    const result = await response.json();
+    console.log("result", result);
+  }
 
-    const stream = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: "Say this is a test" }],
-      stream: true,
-    });
-    for await (const chunk of stream) {
-      process.stdout.write(chunk.choices[0]?.delta?.content || "");
-    }
+  async function claudeRun() {
+    console.log("claudeRun");
+    const response = await fetch("/api/claude");
+    const result = await response.json();
+    console.log("result", result);
   }
 
   function generateHintsForQuestion(questionId: number) {
     geminiRun();
+    // openAiRun();
+    // claudeRun();
     const questionContent = questionContents[questionId];
     return Array.from(
       { length: 3 },
