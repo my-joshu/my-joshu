@@ -15,7 +15,12 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 //         contents: [
 //           {
 //             role: "user",
-//             parts: [{ text: "Give me five subcategories of classic?" }],
+//             parts: [
+//               {
+//                 text: "次の回答をキーワードで箇条書きで下さい。SQLとNoSQLの一貫性を保証するためのアプローチの違いについて教えてください",
+//               },
+//             ],
+//             // parts: [{ text: "Give me five subcategories of classic?" }],
 //           },
 //         ],
 //       }),
@@ -50,7 +55,9 @@ export async function GET(request: Request) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  const prompt = "Give me five subcategories of classic?";
+  const prompt =
+    "次の回答をキーワードで箇条書きで下さい。SQLとNoSQLの一貫性を保証するためのアプローチの違いについて教えてください";
+  // const prompt = "Give me five subcategories of classic?";
 
   const result = await model.generateContent(prompt);
 
