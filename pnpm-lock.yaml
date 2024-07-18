@@ -53,6 +53,9 @@ importers:
       filepond-plugin-file-validate-type:
         specifier: ^1.2.9
         version: 1.2.9(filepond@4.31.1)
+      filesize:
+        specifier: ^10.1.4
+        version: 10.1.4
       geist:
         specifier: ^1.3.0
         version: 1.3.0(next@14.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -1536,6 +1539,10 @@ packages:
 
   filepond@4.31.1:
     resolution: {integrity: sha512-yWYK91Ky72L2AG7BlI8Cb0UjvJz+DjuYdLN1JbkJg8qmoiZ9AU5b5MuOkHmExk/9jQ5R7tRT+H+b8wDiFEJlxQ==}
+
+  filesize@10.1.4:
+    resolution: {integrity: sha512-ryBwPIIeErmxgPnm6cbESAzXjuEFubs+yKYLBZvg3CaiNcmkJChoOGcBSrZ6IwkMwPABwPpVXE6IlNdGJJrvEg==}
+    engines: {node: '>= 10.4.0'}
 
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
@@ -4244,6 +4251,8 @@ snapshots:
       filepond: 4.31.1
 
   filepond@4.31.1: {}
+
+  filesize@10.1.4: {}
 
   fill-range@7.1.1:
     dependencies:
