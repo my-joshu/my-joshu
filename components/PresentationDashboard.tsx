@@ -33,6 +33,7 @@ export function PresentationDashboard({
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setDescription("");
   };
 
   const createPresentationWithSpeakerId = createPresentation.bind(
