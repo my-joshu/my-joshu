@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+
+import { Tables } from "@/types/supabase";
+import { createPresentation } from "@/app/presentations/actions";
+import { formatUtcToLocaleTimezone } from "@/utils/date";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Tables } from "@/types/supabase";
-import { createPresentation } from "@/app/presentations/actions";
-import { DialogTitle } from "@radix-ui/react-dialog";
-import { formatUtcToLocaleTimezone } from "@/utils/date";
-import Link from "next/link";
+import { Dialog, DialogTitle, DialogContent } from "@/components/ui/dialog";
+import { PresentationFileUploader } from "@/components/PresentationFileUploader";
 
 type IconProps = React.ComponentProps<"svg">;
 
@@ -23,16 +25,26 @@ export function PresentationDashboard({
   speakerId: number;
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [description, setDescription] = useState("");
+
   const openModal = () => {
     setIsModalOpen(true);
   };
+
   const closeModal = () => {
     setIsModalOpen(false);
+    setDescription("");
   };
+
   const createPresentationWithSpeakerId = createPresentation.bind(
     null,
     speakerId
   );
+
+  const handleFileProcessed = (text: string) => {
+    setDescription((prevState: string) => prevState + text);
+  };
+
   const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -96,9 +108,14 @@ export function PresentationDashboard({
                     <Textarea
                       id="description"
                       name="description"
-                      placeholder="Enter description"
+                      placeholder="Enter description or upload slides for automatic generation"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                     />
                   </div>
+                  <PresentationFileUploader
+                    onFileProcessed={handleFileProcessed}
+                  />
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="startTime">Start Time</Label>
