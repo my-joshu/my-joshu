@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { RefreshCcwIcon } from "lucide-react";
+import AnswerHint from "./AnswerHint";
 import {
   REALTIME_LISTEN_TYPES,
   REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
@@ -33,24 +34,35 @@ export default function SpeakerQASession({
   const [selectedQuestionId, setSelectedQuestionId] = useState<number | null>(
     null
   );
-  const [hints, setHints] = useState<{ [key: number]: string[] }>({});
+  const [hint, setHint] = useState<string | null>(null);
   const [activeCardId, setActiveCardId] = useState<number | null>(null);
   const [questions, setQuestions] = useState(serverQuestions);
+  const [isPending, startTransition] = useTransition();
 
-  function generateHintsForQuestion(questionId: number) {
-    const questionContent = questions[questionId].content;
-    return Array.from(
-      { length: 3 },
-      (_, i) => `Hint ${i + 1} for '${questionContent}'`
-    );
+  async function askGemini(
+    question: string
+  ): Promise<{ ok: boolean; answer: string }> {
+    const response = await fetch(`/api/gemini`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ question }),
+    });
+    const result = await response.json();
+    console.log("result", result);
+
+    return result;
   }
 
-  const handleGenerateHint = (questionId: number) => {
+  const handleGenerateHint = async (questionId: number) => {
     setSelectedQuestionId(questionId);
-    if (!hints[questionId] || hints[questionId].length < 3) {
-      const newHints = generateHintsForQuestion(questionId);
-      setHints({ ...hints, [questionId]: newHints });
-    }
+
+    startTransition(async () => {
+      const questionContent = questions[questionId].content;
+      const result = await askGemini(questionContent);
+      setHint(result.answer);
+    });
   };
 
   const handleCardClick = (questionId: number) => {
@@ -115,16 +127,12 @@ export default function SpeakerQASession({
           <div className="rounded-lg border p-6">
             <h3 className="text-2xl font-bold">Answer Hints</h3>
             <div className="mt-4 space-y-4">
-              {selectedQuestionId !== null && (
-                <>
-                  <h4 className="text-lg font-medium">
-                    {questions[selectedQuestionId].content}
-                  </h4>
-                  {hints[selectedQuestionId]?.map((hint, i) => (
-                    <p key={i}>{hint}</p>
-                  ))}
-                </>
-              )}
+              {selectedQuestionId !== null &&
+                (isPending ? (
+                  <div>Generating...</div>
+                ) : (
+                  <AnswerHint hint={hint || ""} />
+                ))}
             </div>
           </div>
           <div className="rounded-lg border p-6 text-center">
@@ -182,6 +190,7 @@ export default function SpeakerQASession({
                         size="icon"
                         className="ml-auto"
                         onClick={() => handleGenerateHint(idx)}
+                        disabled={isPending}
                       >
                         <TooltipProvider>
                           <Tooltip>
