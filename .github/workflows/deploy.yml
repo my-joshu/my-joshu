@@ -71,13 +71,13 @@ jobs:
       - name: Check for DB migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: pnpm run supabase db diff > db_diff.txt && cat db_diff.txt
+        run: pnpm supabase db diff > db_diff.txt && cat db_diff.txt
 
       - name: Apply DB migrations (if any)
         if: success()
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: if [ -s db_diff.txt ]; then pnpm run supabase db push; fi
+        run: if [ -s db_diff.txt ]; then pnpm supabase db push; fi
 
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -111,4 +111,4 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           export GEMINI_API_KEY=$GEMINI_API_KEY
-          pnpm run vercel --prod --token $VERCEL_TOKEN
+          pnpm vercel --prod --token $VERCEL_TOKEN
