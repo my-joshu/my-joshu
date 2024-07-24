@@ -42,19 +42,22 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install Supabase CLI
-        run: npm install -g supabase
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
 
       - name: Check for DB migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase db diff --token $SUPABASE_ACCESS_TOKEN > db_diff.txt && cat db_diff.txt
+        run: pnpm supabase db diff --token $SUPABASE_ACCESS_TOKEN > db_diff.txt && cat db_diff.txt
 
       - name: Apply DB migrations (if any)
         if: success()
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: if [ -s db_diff.txt ]; then supabase db push --token $SUPABASE_ACCESS_TOKEN; fi
+        run: if [ -s db_diff.txt ]; then pnpm supabase db push --token $SUPABASE_ACCESS_TOKEN; fi
 
   build-and-deploy:
     runs-on: ubuntu-latest
