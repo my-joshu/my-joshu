@@ -7,11 +7,9 @@ env:
 
 on:
   workflow_run:
-    workflows: ["Run Tests"]
-    types:
-      - completed
-    branches:
-      - build-github-workflows
+    workflows: [Run Tests]
+    types: [completed]
+    branches: [build-github-workflows]
 # https://github.com/supabase/supabase-action-example/blob/main/.github/workflows/production.yaml
 jobs:
   migrations:
