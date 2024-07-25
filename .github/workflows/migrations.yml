@@ -6,10 +6,15 @@ env:
   SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
 
 on:
-  workflow_run:
-    workflows: [Run Tests]
-    types: [completed]
-    branches: [build-github-workflows]
+  push:
+    branches:
+      - build-github-workflows
+
+# on:
+#   workflow_run:
+#     workflows: [Run Tests]
+#     types: [completed]
+#     branches: [build-github-workflows]
 # https://github.com/supabase/supabase-action-example/blob/main/.github/workflows/production.yaml
 jobs:
   migrations:
