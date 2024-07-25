@@ -1,0 +1,39 @@
+name: DB Migrations
+
+env:
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+  SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+  SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
+on:
+  workflow_run:
+    workflows: ["Run Tests"]
+    types:
+      - completed
+
+# https://github.com/supabase/supabase-action-example/blob/main/.github/workflows/production.yaml
+jobs:
+  migrations:
+    runs-on: ubuntu-latest
+    if: >
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.head_branch == 'main') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link to a Supabase project
+        run: supabase link --project-ref $SUPABASE_PROJECT_ID
+
+      - name: Check for DB migrations
+        run: supabase db diff > db_diff.txt && cat db_diff.txt
+
+      - name: Apply DB migrations (if any)
+        if: success()
+        run: if [ -s db_diff.txt ]; then supabase db push; fi
