@@ -5,7 +5,6 @@ import {
   VALID_MIME_TYPES,
 } from "@/shared/lib/constants";
 
-/** Use the same constants on the frontend. */
 const validateFile = (file: File): string | undefined => {
   const { size, type } = file;
 
