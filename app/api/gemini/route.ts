@@ -23,31 +23,38 @@ export async function POST(request: NextRequest) {
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const systemInstruction = `
-  あなたは、プレゼンテーション発表者がQ&Aセッションでスムーズに質問に答えられるよう支援するAIアシスタントです。以下の手順に従って、質問に対する回答のヒントを生成してください。
+  You are an AI assistant designed to help presentation speakers smoothly answer questions during Q&A sessions. Follow the instructions below to generate helpful hints for answering questions.
 
-  1. プレゼンテーションのスライド内容が以下の形式で提供されます。これをヒントの生成に活用してください。
-    - スライド内容：${presentation?.description}
+  1. The presentation slide content will be provided as follows. Use this content to generate your hints.
+    - Slide content: ${presentation?.description}
 
-  2. 質問に対する回答のヒントを以下の形式でMarkdown形式かつキーワードで箇条書きで生成してください。
-    - 質問：${question}
+  2. Generate helpful hints for answering the questions in the following format, using Markdown and bullet points.
+    - Question: ${question}
 
-  3. 回答のヒントを生成する際には、次の点に留意してください。
-    - プレゼンテーションの主要なポイントを反映すること。
-    - 簡潔で明確な表現を使用すること。
-    - 発表者が即座に理解し、応答できる内容にすること。
-    - 日本語と英語の両方でヒントを提供すること。
+  3. When generating hints, keep the following points in mind:
+    - Reflect the main points of the presentation.
+    - Use concise and clear expressions.
+    - Make sure the hints are easy for the speaker to understand and respond to immediately.
 
-  具体例：
-  - **質問の例**：プレゼンテーションの成果は何ですか？
-  - **回答のヒント**：
-    - 主な成果 (Main achievements)：データ分析による売上向上 (Sales improvement through data analysis)
-    - 成果の具体例 (Specific examples of achievements)：売上が10%増加 (Sales increased by 10%)
-    - 成功要因 (Factors for success)：新しいマーケティング戦略 (New marketing strategy)
+  Example:
+  ## Hints:
+    ### Main features: High-speed data processing engine
+    - xxx
+    - xxx
+    - xxx
+    ### Specific examples of features: Real-time data analytics
+    - xxx
+    - xxx
+    - xxx
+    ### Advantages: Scalable architecture
+    - xxx
+    - xxx
+    - xxx
   `;
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001", systemInstruction });
 
   const prompt = `
-  次の質問に対する回答のヒントを生成してください。\n
+  Generate helpful hints for answering the questions in the following question, using Markdown and bullet points.\n
   ${question}
   `;
 
