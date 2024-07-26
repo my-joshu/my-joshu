@@ -40,14 +40,15 @@ export default function SpeakerQASession({
   const [isPending, startTransition] = useTransition();
 
   async function askGemini(
-    question: string
+    question: string,
+    presentationId: number
   ): Promise<{ ok: boolean; answer: string }> {
     const response = await fetch(`/api/gemini`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, presentationId }),
     });
     const result = await response.json();
     console.log("result", result);
@@ -59,8 +60,9 @@ export default function SpeakerQASession({
     setSelectedQuestionId(questionId);
 
     startTransition(async () => {
-      const questionContent = questions[questionId].content;
-      const result = await askGemini(questionContent);
+      const question = questions[questionId];
+      const questionContent = question.content;
+      const result = await askGemini(questionContent, question.presentation_id);
       setHint(result.answer);
     });
   };
