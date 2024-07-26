@@ -3,7 +3,6 @@ import { filesize } from "filesize";
 /** MIME types: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types */
 export const VALID_MIME_TYPES = [
   "application/pdf", // .pdf
-  "application/vnd.ms-powerpoint", // .ppt
   "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
 ];
 /**
