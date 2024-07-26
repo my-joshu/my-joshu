@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run vitest
+        run: pnpm test
+
+  database-test:
+    runs-on: ubuntu-latest
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - run: supabase db start
+      - run: supabase db lint
+      - run: supabase test db
+
+      # Generate types using GitHub Actions: https://supabase.com/docs/guides/cli/github-action/generating-types
+      - name: Verify generated types match Postgres schema
+        run: |
+          supabase gen types typescript --local > ./types/supabase.ts
+          if ! git diff --ignore-space-at-eol --exit-code --quiet ./types/supabase.ts; then
+            echo "Detected uncommitted changes after build. See status below:"
+            git diff
+            exit 1
+          fi
+
+  db-push-dryrun:
+    runs-on: ubuntu-latest
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link to a Supabase project
+        run: supabase link --project-ref $SUPABASE_PROJECT_ID
+
+      - name: Check for DB migrations
+        run: supabase db diff --linked > db_diff.txt && cat db_diff.txt
+
+      # -s file: True if file exists and has a size greater than zero.
+      - name: Apply DB migrations
+        if: success()
+        run: if [ -s db_diff.txt ]; then supabase db push --dry-run; fi
