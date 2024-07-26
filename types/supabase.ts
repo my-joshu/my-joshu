@@ -47,7 +47,7 @@ export type Database = {
           id?: number
           name?: string | null
           updated_at?: string
-          uuid: string
+          uuid?: string
         }
         Update: {
           created_at?: string
@@ -81,7 +81,7 @@ export type Database = {
           start_time?: string
           title: string
           updated_at?: string
-          uuid: string
+          uuid?: string
         }
         Update: {
           created_at?: string
@@ -116,7 +116,7 @@ export type Database = {
           content: string
           id?: number
           question_id: number
-          uuid: string
+          uuid?: string
         }
         Update: {
           content?: string
@@ -153,7 +153,7 @@ export type Database = {
           id?: number
           presentation_id: number
           updated_at?: string
-          uuid: string
+          uuid?: string
         }
         Update: {
           answered?: boolean | null
@@ -197,7 +197,7 @@ export type Database = {
           id?: number
           name: string
           updated_at?: string
-          uuid: string
+          uuid?: string
         }
         Update: {
           created_at?: string
