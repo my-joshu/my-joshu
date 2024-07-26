@@ -1,0 +1,65 @@
+# Examples
+# Vercel: https://github.com/vercel/examples/tree/main/ci-cd/github-actions
+# Supabase: https://github.com/supabase/supabase-action-example
+
+name: Release (Production)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link to a Supabase project
+        run: supabase link --project-ref $SUPABASE_PROJECT_ID
+
+      - name: Check for DB migrations
+        run: supabase db diff --linked > db_diff.txt && cat db_diff.txt
+
+      # -s file: True if file exists and has a size greater than zero.
+      - name: Apply DB migrations
+        if: success()
+        run: if [ -s db_diff.txt ]; then supabase db push; fi
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: migrate
+
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pull Vercel Environment Information
+        run: pnpm run vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: pnpm run vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel
+        run: pnpm run vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
