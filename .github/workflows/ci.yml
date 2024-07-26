@@ -43,7 +43,7 @@ jobs:
       # Generate types using GitHub Actions: https://supabase.com/docs/guides/cli/github-action/generating-types
       - name: Verify generated types match Postgres schema
         run: |
-          supabase gen types typescript --local > ./types/supabase.ts
+          supabase gen types typescript --local --schema public > ./types/supabase.ts
           if ! git diff --ignore-space-at-eol --exit-code --quiet ./types/supabase.ts; then
             echo "Detected uncommitted changes after build. See status below:"
             git diff
