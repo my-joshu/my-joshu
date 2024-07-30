@@ -54,75 +54,89 @@ export function PresentationDashboard({
   };
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
-      <main className="flex-1 p-6">
-        <header className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Presentations</h2>
-          <Button className="bg-green-600" onClick={openModal}>
+    <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
+      <main className="container mx-auto p-4">
+        <header className="flex items-center justify-between mb-4">
+          <h2 className="text-3xl font-bold text-gradient">Presentations</h2>
+          <Button
+            className="bg-gradient-to-r from-blue-500 to-teal-500 text-white font-bold py-2 px-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-600 hover:to-teal-600 transition duration-300"
+            onClick={openModal}
+          >
             + Create Presentation
           </Button>
         </header>
-        <section className="mt-6">
+        <section
+          className="space-y-2 overflow-y-auto hover:overflow-y-scroll rounded-lg"
+          style={{ maxHeight: "calc(100vh - 160px)" }}
+        >
           {presentations.map((presentation) => (
             <Link
               key={presentation.id}
               href={`/presentations/${presentation.id}`}
             >
-              <Card className="flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-700">
-                <div className="flex items-center space-x-4">
-                  <PresentationIcon className="w-6 h-6 text-gray-400" />
+              <Card className="flex items-center justify-between p-2 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 mb-2">
+                <div className="flex items-center space-x-2">
+                  <PresentationIcon className="w-5 h-5 text-gray-400" />
                   <div>
                     <h3 className="font-semibold text-white">
                       {presentation.title}
                     </h3>
-                    <p className="text-gray-400">
+                    <p className="text-gray-400 text-sm">
                       {formatUtcToLocaleTimezone(presentation.start_time)}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <ScreenShareIcon className="w-6 h-6 text-gray-400" />
-                  <SmartphoneIcon className="w-6 h-6 text-gray-400" />
-                  <ExpandIcon className="w-6 h-6 text-gray-400" />
+                <div className="flex items-center space-x-2">
+                  <ScreenShareIcon className="w-5 h-5 text-gray-400" />
+                  <SmartphoneIcon className="w-5 h-5 text-gray-400" />
+                  <ExpandIcon className="w-5 h-5 text-gray-400" />
                 </div>
               </Card>
             </Link>
           ))}
         </section>
-      </main>
-      {isModalOpen && (
-        <Dialog open={isModalOpen} onOpenChange={closeModal}>
-          <DialogContent>
-            <form onSubmit={submitHandler}>
-              <DialogTitle className="text-xl font-semibold mb-4">
-                Create Presentation
-              </DialogTitle>
-              <div className="p-4">
-                <div className="grid gap-4">
+        {isModalOpen && (
+          <Dialog open={isModalOpen} onOpenChange={closeModal}>
+            <DialogContent className="bg-gray-900 text-white">
+              <form onSubmit={submitHandler}>
+                <DialogTitle className="text-lg font-bold mb-2">
+                  Create Presentation
+                </DialogTitle>
+                <div className="p-2 space-y-2">
                   <div>
                     <Label htmlFor="title">Title</Label>
-                    <Input id="title" name="title" placeholder="Enter title" />
+                    <Input
+                      id="title"
+                      name="title"
+                      placeholder="Enter title"
+                      className="flex-1 p-2 rounded-lg bg-gray-800 text-white focus:border-gray-700"
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="description">Description</Label>
                     <Textarea
                       id="description"
                       name="description"
-                      placeholder="Enter description or upload slides for automatic generation"
+                      placeholder="Enter description or upload slides"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
+                      className="flex-1 p-2 rounded-lg bg-gray-800 text-white focus:border-gray-700"
+                      required
                     />
                   </div>
                   <PresentationFileUploader
                     onFileProcessed={handleFileProcessed}
                   />
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Label htmlFor="startTime">Start Time</Label>
                       <Input
                         id="startTime"
                         name="startTime"
                         type="datetime-local"
+                        className="flex-1 p-2 rounded-lg bg-gray-800 text-white focus:border-gray-700 dark:[color-scheme:dark]"
+                        required
                       />
                     </div>
                     <div>
@@ -131,23 +145,32 @@ export function PresentationDashboard({
                         id="endTime"
                         name="endTime"
                         type="datetime-local"
+                        className="flex-1 p-2 rounded-lg bg-gray-800 text-white focus:border-gray-700 dark:[color-scheme:dark]"
+                        required
                       />
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex justify-end mt-4">
-                <Button variant="outline" onClick={closeModal}>
-                  Cancel
-                </Button>
-                <Button className="ml-2 bg-green-600" type="submit">
-                  Create
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      )}
+                <div className="flex justify-end mt-2 space-x-2">
+                  <Button
+                    variant="outline"
+                    onClick={closeModal}
+                    className="text-white border border-gray-700 bg-gray-800 hover:bg-gray-700 transition duration-300"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="bg-gradient-to-r from-blue-500 to-teal-500 text-white font-bold py-1 px-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-600 hover:to-teal-600 transition duration-300"
+                    type="submit"
+                  >
+                    Create
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
+      </main>
     </div>
   );
 }

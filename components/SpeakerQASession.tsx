@@ -100,10 +100,10 @@ export default function SpeakerQASession({
 
   return (
     <div className="flex min-h-screen bg-gray-900 w-full flex-col">
-      <main className="container mx-auto grid grid-cols-6 gap-8 py-4 px-4 md:px-6">
+      <main className="container mx-auto grid grid-cols-6 gap-4 py-2 px-2 md:px-4">
         <div className="col-span-5">
           <Button
-            className="bg-gray-800 dark:bg-gray-900 hover:bg-gray-700 dark:hover:bg-gray-800"
+            className="left-4 top-4 bg-gray-800 hover:bg-gray-700 flex items-center group text-sm border-none"
             variant="outline"
             onClick={() => router.push("/presentations")}
           >
@@ -117,7 +117,7 @@ export default function SpeakerQASession({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="mr-2"
+              className="mr-1"
             >
               <path d="M19 12H5" />
               <path d="M12 19l-7-7 7-7" />
@@ -125,10 +125,10 @@ export default function SpeakerQASession({
             Back to Presentations
           </Button>
         </div>
-        <div className="col-span-3 space-y-6">
-          <div className="rounded-lg border p-6">
-            <h3 className="text-2xl font-bold">Answer Hints</h3>
-            <div className="mt-4 space-y-4">
+        <div className="col-span-3 space-y-4">
+          <div className="rounded-lg border border-gray-700 p-4 bg-gray-800">
+            <h3 className="text-xl font-bold text-teal-400">Answer Hints</h3>
+            <div className="mt-2 space-y-2">
               {selectedQuestionId !== null &&
                 (isPending ? (
                   <div>Generating...</div>
@@ -137,17 +137,17 @@ export default function SpeakerQASession({
                 ))}
             </div>
           </div>
-          <div className="rounded-lg border p-6 text-center">
-            <h3 className="text-2xl font-bold">Scan to Connect</h3>
+          <div className="rounded-lg border border-gray-700 p-4 text-center bg-gray-800">
+            <h3 className="text-xl font-bold text-teal-400">Scan to Connect</h3>
             <p>Scan the QR code to stay connected with the speaker.</p>
-            <div className="mx-auto mt-4 w-32">
+            <div className="mx-auto mt-2 w-24">
               {qrCode ? (
                 <img
                   src={qrCode}
-                  width={128}
-                  height={128}
+                  width={96}
+                  height={96}
                   alt="QR Code"
-                  className="aspect-square w-full object-contain"
+                  className="rounded-lg aspect-square w-full object-contain"
                 />
               ) : (
                 <p className="text-gray-500 dark:text-gray-400">
@@ -157,10 +157,10 @@ export default function SpeakerQASession({
             </div>
           </div>
         </div>
-        <div className="col-span-3 space-y-6">
-          <div className="max-w-4xl mx-auto px-6 pb-6 space-y-6">
+        <div className="col-span-3 space-y-4">
+          <div className="max-w-4xl mx-auto px-4 pb-4 space-y-4">
             <div>
-              <h1 className="text-3xl font-bold">Q&A Session</h1>
+              <h1 className="text-2xl font-bold text-teal-400">Q&A Session</h1>
               {!questions || questions.length === 0 ? (
                 <p className="text-gray-500 dark:text-gray-400">
                   No questions yet.
@@ -168,7 +168,7 @@ export default function SpeakerQASession({
               ) : null}
             </div>
             <div
-              className="space-y-4 overflow-y-auto hover:overflow-y-scroll"
+              className="space-y-2 overflow-y-auto hover:overflow-y-scroll rounded-lg"
               style={{ maxHeight: "calc(100vh - 200px)" }}
             >
               {questions.map((question, idx) => (
@@ -176,30 +176,32 @@ export default function SpeakerQASession({
                   key={question.uuid}
                   className={
                     activeCardId === idx
-                      ? "border-blue-500"
-                      : "hover:cursor-pointer"
+                      ? "bg-gray-800 border-blue-500 rounded-lg border"
+                      : "bg-gray-800 hover:cursor-pointer rounded-lg border border-gray-700"
                   }
                 >
-                  <CardContent onClick={() => handleCardClick(idx)}>
+                  <CardContent
+                    onClick={() => handleCardClick(idx)}
+                    className="p-2"
+                  >
                     <div className="flex items-center justify-between">
-                      <div className="prose">
-                        <p className="pt-4 break-words text-lg">
+                      <div className="prose prose-invert">
+                        <p className="break-words text-lg text-white">
                           {question.content}
                         </p>
                       </div>
                       <Button
-                        variant="ghost"
                         size="icon"
-                        className="ml-auto"
+                        className="ml-2 rounded-lg p-2 hover:bg-gray-600 shadow-lg"
                         onClick={() => handleGenerateHint(idx)}
                         disabled={isPending}
                       >
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <RefreshCcwIcon className="w-4 h-4" />
+                              <RefreshCcwIcon className="w-6 h-6 text-white" />
                             </TooltipTrigger>
-                            <TooltipContent className="p-2 bg-gray-800 dark:bg-gray-900 rounded-md shadow-md">
+                            <TooltipContent className="p-2 bg-none rounded-full shadow-md border-none">
                               <p>Generate Answer Hints</p>
                             </TooltipContent>
                           </Tooltip>
@@ -207,7 +209,7 @@ export default function SpeakerQASession({
                       </Button>
                     </div>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="p-2">
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       10 upvotes
                     </div>

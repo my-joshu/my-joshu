@@ -71,55 +71,67 @@ export function QASession({
   // TODO Show error message for input form
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Q&A Session</h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          Submit your questions and upvote the ones you're most interested in.
-        </p>
-      </div>
-      <form
-        action={formAction}
-        className="flex items-center gap-2"
-        key={state.resetKey}
-      >
-        <Input
-          name="content"
-          type="text"
-          placeholder="Ask a question..."
-          className="flex-1"
-          required
-        />
-        <Button type="submit">Submit</Button>
-      </form>
-      <p aria-live="polite" className="sr-only">
-        {state.message}
-      </p>
-      <div
-        className="space-y-4 overflow-y-auto hover:overflow-y-scroll"
-        style={{ maxHeight: "calc(100vh - 200px)" }}
-      >
-        {questions.map((q) => (
-          <Card key={q.uuid}>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="prose prose-stone">
-                  <p>{q.content}</p>
-                </div>
-                <Button variant="ghost" size="icon">
-                  <ThumbsUpIcon className="w-5 h-5" />
-                  <span className="sr-only">Upvote</span>
-                </Button>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                10 upvotes
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+    <div className="flex min-h-screen h-full bg-gray-900 w-full flex-col overflow-hidden">
+      <main className="container mx-auto grid grid-cols-6 gap-4 py-2 px-2 md:px-4 h-full">
+        <div className="col-span-6 max-w-2xl mx-auto p-4 space-y-4 bg-gray-900 text-white rounded-lg h-full">
+          <div>
+            <h1 className="text-3xl font-bold text-gradient">Q&A Session</h1>
+            <p className="text-gray-400 opacity-80">
+              Submit your questions and upvote the ones you're most interested
+              in.
+            </p>
+          </div>
+          <form
+            action={formAction}
+            className="flex flex-row items-center gap-4"
+            key={state.resetKey}
+          >
+            <Input
+              name="content"
+              type="text"
+              placeholder="Ask a question..."
+              className="flex-1 p-3 bg-gray-800 text-white rounded-lg focus-visible:"
+              required
+            />
+            <Button
+              type="submit"
+              className="bg-gradient-to-r from-blue-500 to-teal-500 text-white py-2 px-4 rounded-lg hover:bg-gradient-to-r hover:from-blue-600 hover:to-teal-600 transition duration-300"
+            >
+              Submit
+            </Button>
+          </form>
+          <p aria-live="polite" className="sr-only">
+            {state.message}
+          </p>
+          <div className="flex-1 overflow-y-auto space-y-2 rounded-lg">
+            {questions.map((q) => (
+              <Card
+                key={q.uuid}
+                className="bg-gray-800 text-white rounded-lg p-2 border border-gray-700"
+              >
+                <CardContent className="p-2">
+                  <div className="flex items-center justify-between">
+                    <div className="prose prose-invert">
+                      <p className="text-lg">{q.content}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-lg ml-2"
+                    >
+                      <ThumbsUpIcon className="w-5 h-5" />
+                      <span className="sr-only">Upvote</span>
+                    </Button>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-2">
+                  <div className="text-sm text-gray-400">10 upvotes</div>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
