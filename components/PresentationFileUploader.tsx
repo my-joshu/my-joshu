@@ -34,9 +34,9 @@ export function PresentationFileUploader({
             const data = JSON.parse(response);
             if (data.status === "ok") {
               onFileProcessed(data.text);
-              return "Success file processing!";
+              return 1; // No meaning. But it needs to return number or string
             } else {
-              return `Error during file processing. ${data.message}`;
+              return 0; // No meaning. But it needs to return number or string
             }
           },
           onerror: (error) => {

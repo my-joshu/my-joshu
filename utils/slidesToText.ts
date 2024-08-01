@@ -1,3 +1,4 @@
+import path from "path";
 import officeParser from "officeparser";
 import {
   MAX_FILE_SIZE_BYTE,
@@ -28,14 +29,21 @@ export const extractText = async (file: File): Promise<string> => {
     }
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const text = await officeParser.parseOfficeAsync(fileBuffer);
+
+    /**
+     * Serverless Functions have a read-only filesystem with writable /tmp scratch space up to 500 MB.
+     * https://vercel.com/docs/functions/runtimes#file-system-support
+     *
+     * You need to specify `tmp/` directory as a temporary file location to officeParser
+     */
+    const officeParserTmpDir = path.join(process.cwd(), "tmp/officeParser");
+    const text = await officeParser.parseOfficeAsync(fileBuffer, {
+      tempFilesLocation: officeParserTmpDir,
+    });
 
     return text.trim();
   } catch (error: unknown) {
-    let message = "An error occurred during text extraction.";
-    if (error instanceof Error) {
-      message += " " + error.message;
-    }
-    throw Error(message);
+    console.error("Error in extractText function:", error);
+    throw new Error("Text extraction failed.");
   }
 };

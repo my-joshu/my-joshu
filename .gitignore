@@ -34,3 +34,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Ignore all tempfiles.
+/tmp/*
+!/tmp/.keep
+
+# Ignore tempfiles, but keep the directory.
+/tmp/officeParser/*
+!/tmp/officeParser/
+!/tmp/officeParser/.keep

@@ -26,15 +26,20 @@ export async function POST(req: Request): Promise<Response> {
     return new Response(JSON.stringify({ status: "ok", text }), {
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
-    let message = "Error during text extraction.";
-    if (error instanceof Error) {
-      message += " " + error.message;
-    }
+  } catch (error: unknown) {
+    console.error("slidesToText POST function failed:", error);
 
-    return new Response(JSON.stringify({ status: "error", message: message }), {
-      headers: { "Content-Type": "application/json" },
-      status: 500,
-    });
+    const responseMessage =
+      error instanceof Error
+        ? error.message
+        : "An internal error occurred. Please try again later.";
+
+    return new Response(
+      JSON.stringify({ status: "error", message: responseMessage }),
+      {
+        headers: { "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
   }
 }
