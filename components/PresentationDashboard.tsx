@@ -122,7 +122,6 @@ export function PresentationDashboard({
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       className="flex-1 p-2 rounded-lg bg-gray-800 text-white focus:border-gray-700"
-                      required
                     />
                   </div>
                   <PresentationFileUploader
@@ -146,7 +145,6 @@ export function PresentationDashboard({
                         name="endTime"
                         type="datetime-local"
                         className="flex-1 p-2 rounded-lg bg-gray-800 text-white focus:border-gray-700 dark:[color-scheme:dark]"
-                        required
                       />
                     </div>
                   </div>
