@@ -71,7 +71,7 @@ export async function createPresentation(
     }
 
     // NOTE: This URL is to be able to join the presentation for audience
-    const presentationUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/anonymous?presentationId=${data.id}`;
+    const presentationUrl = `${process.env.NEXT_PUBLIC_HOST_URL}/auth/anonymous?presentationId=${data.id}`;
     const qrCode = await generateQR(presentationUrl)
 
     await supabase
