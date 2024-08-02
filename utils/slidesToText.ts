@@ -1,4 +1,4 @@
-import officeParser from "officeparser";
+import officeParser, { type OfficeParserConfig } from "officeparser";
 import {
   MAX_FILE_SIZE_BYTE,
   MAX_FILE_SIZE_STRING,
@@ -19,6 +19,20 @@ const validateFile = (file: File): string | undefined => {
   }
 };
 
+/**
+ * Serverless Functions have a read-only filesystem with writable /tmp scratch space up to 500 MB.
+ * https://vercel.com/docs/functions/runtimes#file-system-support
+ *
+ * Related issue: https://github.com/vercel/vercel/discussions/5320
+ */
+const createOfficeParserConfig = (): OfficeParserConfig => {
+  const config: OfficeParserConfig = {};
+  if (process.env.NODE_ENV === "production") {
+    config.tempFilesLocation = "/tmp";
+  }
+  return config;
+};
+
 /** Currently office files only supported. */
 export const extractText = async (file: File): Promise<string> => {
   try {
@@ -28,14 +42,14 @@ export const extractText = async (file: File): Promise<string> => {
     }
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const text = await officeParser.parseOfficeAsync(fileBuffer);
+    const text = await officeParser.parseOfficeAsync(
+      fileBuffer,
+      createOfficeParserConfig()
+    );
 
     return text.trim();
   } catch (error: unknown) {
-    let message = "An error occurred during text extraction.";
-    if (error instanceof Error) {
-      message += " " + error.message;
-    }
-    throw Error(message);
+    console.error("Error in extractText function:", error);
+    throw new Error("Text extraction failed.");
   }
 };
