@@ -58,7 +58,7 @@
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "encoding": "^0.1.13",
-    "supabase": "^1.178.2",
+    "supabase": "^1.187.10",
     "vercel": "^34.2.7",
     "vitest": "^1.6.0"
   }
