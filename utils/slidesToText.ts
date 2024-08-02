@@ -1,5 +1,4 @@
-import path from "path";
-import officeParser from "officeparser";
+import officeParser, { type OfficeParserConfig } from "officeparser";
 import {
   MAX_FILE_SIZE_BYTE,
   MAX_FILE_SIZE_STRING,
@@ -20,6 +19,20 @@ const validateFile = (file: File): string | undefined => {
   }
 };
 
+/**
+ * Serverless Functions have a read-only filesystem with writable /tmp scratch space up to 500 MB.
+ * https://vercel.com/docs/functions/runtimes#file-system-support
+ *
+ * Related issue: https://github.com/vercel/vercel/discussions/5320
+ */
+const createOfficeParserConfig = (): OfficeParserConfig => {
+  const config: OfficeParserConfig = {};
+  if (process.env.NODE_ENV === "production") {
+    config.tempFilesLocation = "/tmp";
+  }
+  return config;
+};
+
 /** Currently office files only supported. */
 export const extractText = async (file: File): Promise<string> => {
   try {
@@ -29,17 +42,10 @@ export const extractText = async (file: File): Promise<string> => {
     }
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-
-    /**
-     * Serverless Functions have a read-only filesystem with writable /tmp scratch space up to 500 MB.
-     * https://vercel.com/docs/functions/runtimes#file-system-support
-     *
-     * You need to specify `tmp/` directory as a temporary file location to officeParser
-     */
-    const officeParserTmpDir = path.join(process.cwd(), "tmp/officeParser");
-    const text = await officeParser.parseOfficeAsync(fileBuffer, {
-      tempFilesLocation: officeParserTmpDir,
-    });
+    const text = await officeParser.parseOfficeAsync(
+      fileBuffer,
+      createOfficeParserConfig()
+    );
 
     return text.trim();
   } catch (error: unknown) {
