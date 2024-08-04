@@ -20,6 +20,15 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: 9
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase
+        run: supabase start -x storage-api,imgproxy,inbucket,studio,edge-runtime
+
+      - name: Status
+        run: supabase status
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
