@@ -7,12 +7,12 @@ import {
   REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
 } from "@supabase/supabase-js";
 
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tables } from "@/types/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { createQuestionsInsertChannelName } from "@/utils/channelName";
+import { Textarea } from "./ui/textarea";
 
 // NOTE: Use resetKey to reset input form by server actions: https://github.com/vercel/next.js/discussions/58448#discussioncomment-8459474
 const initialState = {
@@ -68,14 +68,12 @@ export function QASession({
     };
   }, []);
 
-  // TODO Show error message for input form
-
   return (
-    <div className="flex min-h-screen h-full bg-gray-900 w-full flex-col overflow-hidden">
+    <div className="flex flex-col min-h-screen bg-gray-900 overflow-hidden">
       <main className="container mx-auto grid grid-cols-6 gap-4 py-2 px-2 md:px-4 h-full">
-        <div className="col-span-6 max-w-2xl mx-auto p-4 space-y-4 bg-gray-900 text-white rounded-lg h-full">
+        <div className="col-span-6 max-w-2xl mx-auto p-4 space-y-4 bg-gray-900 text-white rounded-lg">
           <div>
-            <h1 className="text-3xl font-bold text-gradient">Q&A Session</h1>
+            <h1 className="text-3xl font-bold">Q&A Session</h1>
             <p className="text-gray-400 opacity-80">
               Submit your questions and upvote the ones you're most interested
               in.
@@ -83,42 +81,40 @@ export function QASession({
           </div>
           <form
             action={formAction}
-            className="flex flex-row items-center gap-4"
+            className="space-y-2 w-full"
             key={state.resetKey}
           >
-            <Input
+            <Textarea
               name="content"
-              type="text"
-              placeholder="Ask a question..."
-              className="flex-1 p-3 bg-gray-800 text-white rounded-lg focus-visible:"
-              required
+              placeholder="Type your question..."
+              className="p-3 bg-gray-800 text-white text-md rounded-lg"
+              maxLength={160}
             />
-            <Button
-              type="submit"
-              className="bg-gradient-to-r from-blue-500 to-teal-500 text-white py-2 px-4 rounded-lg hover:bg-gradient-to-r hover:from-blue-600 hover:to-teal-600 transition duration-300"
-            >
-              Submit
-            </Button>
+            <div className="flex justify-between items-center mt-2">
+              {state.message && (
+                <div className="text-red-500">{state.message}</div>
+              )}
+              <div className="flex-1"></div>
+              <Button
+                type="submit"
+                className="py-2 px-4 bg-gradient-to-r from-blue-600 to-teal-400 text-white hover:from-blue-700 hover:to-teal-500 transition duration-300"
+              >
+                Submit
+              </Button>
+            </div>
           </form>
-          <p aria-live="polite" className="sr-only">
-            {state.message}
-          </p>
-          <div className="flex-1 overflow-y-auto space-y-2 rounded-lg">
+          <div className="overflow-y-auto space-y-2 rounded-lg">
             {questions.map((q) => (
               <Card
                 key={q.uuid}
-                className="bg-gray-800 text-white rounded-lg p-2 border border-gray-700"
+                className="bg-gray-800 text-white rounded-lg px-2 border border-gray-700"
               >
                 <CardContent className="p-2">
                   <div className="flex items-center justify-between">
-                    <div className="prose prose-invert">
-                      <p className="text-lg">{q.content}</p>
+                    <div className="flex-1 overflow-hidden">
+                      <p className="text-lg break-words">{q.content}</p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="rounded-lg ml-2"
-                    >
+                    <Button variant="ghost" size="icon" className="ml-2">
                       <ThumbsUpIcon className="w-5 h-5" />
                       <span className="sr-only">Upvote</span>
                     </Button>
