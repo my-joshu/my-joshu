@@ -176,8 +176,8 @@ export default function SpeakerQASession({
                   key={question.uuid}
                   className={
                     activeCardId === idx
-                      ? "bg-gray-800 border-blue-500 rounded-lg border"
-                      : "bg-gray-800 hover:cursor-pointer rounded-lg border border-gray-700"
+                      ? "bg-gray-800 border-blue-500 rounded-lg px-2 border"
+                      : "bg-gray-800 hover:cursor-pointer rounded-lg px-2 border border-gray-700"
                   }
                 >
                   <CardContent
@@ -185,7 +185,7 @@ export default function SpeakerQASession({
                     className="p-2"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="prose prose-invert">
+                      <div className="flex-1 overflow-hidden">
                         <p className="break-words text-lg text-white">
                           {question.content}
                         </p>

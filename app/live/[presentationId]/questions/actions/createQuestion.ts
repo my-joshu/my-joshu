@@ -10,8 +10,8 @@ const QuestionSchema = z.object({
   content: z
     .string()
     .trim()
-    .min(1, "Please enter your question")
-    .max(160, "Too many characters"),
+    .min(1, "Please enter your question.")
+    .max(160, "Too many characters, maximum is 160."),
 });
 
 async function validateInput(
@@ -26,8 +26,11 @@ async function validateInput(
   });
 
   if (!validationResult.success) {
-    console.error(validationResult.error.flatten().fieldErrors);
-    throw new Error("Missing fields to create question");
+    const errors = validationResult.error.flatten().fieldErrors;
+    console.error(errors);
+    throw new Error(
+      errors.content ? errors.content[0] : "Missing field to create question."
+    );
   }
 
   return validationResult.data;
@@ -57,7 +60,7 @@ export async function createQuestion(
     } = await supabase.auth.getUser();
 
     if (!user || !user.is_anonymous) {
-      throw new Error("Anonymous user not found");
+      throw new Error("User not authorized, please rejoin.");
     }
 
     const { data, error } = await supabase
@@ -71,17 +74,17 @@ export async function createQuestion(
       .single<Tables<"questions">>();
 
     if (error) {
-      throw new Error("Poor internet communication");
+      throw new Error("Poor internet communication.");
     }
 
     return {
       resetKey: data.uuid,
-      message: `Created question ${data.content}`,
+      message: "",
     };
   } catch (error) {
-    let message = "Failed to create question";
+    let message = "Failed to create question.";
     if (error instanceof Error) {
-      message += `: ${error.message}`;
+      message = `${error.message}`;
     }
 
     return {
