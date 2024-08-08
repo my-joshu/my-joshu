@@ -9,10 +9,10 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { Tables } from "@/types/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { createQuestionsInsertChannelName } from "@/utils/channelName";
-import { Textarea } from "./ui/textarea";
 
 // NOTE: Use resetKey to reset input form by server actions: https://github.com/vercel/next.js/discussions/58448#discussioncomment-8459474
 const initialState = {
