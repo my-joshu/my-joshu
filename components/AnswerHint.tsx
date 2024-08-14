@@ -2,9 +2,13 @@ import { Suspense } from "react";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 
 function HintContent({ hint }: { hint: string }) {
+  if (!hint) {
+    return;
+  }
+
   return (
     <MarkdownPreview
-      source={hint || ""}
+      source={hint}
       style={{ padding: 16, backgroundColor: "#1A202C" }}
     />
   );

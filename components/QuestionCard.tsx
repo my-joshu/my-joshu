@@ -19,6 +19,7 @@ type QuestionCardType = {
     questionId: number,
     isAnswered: boolean
   ) => Promise<void>;
+  handleCardClick: (questionId: number) => void;
   isPending: boolean;
   selectedQuestionId: number | null;
 };
@@ -27,6 +28,7 @@ export const QuestionCard = ({
   question,
   handleGenerateHint,
   handleAnswerStatusChange,
+  handleCardClick,
   isPending,
   selectedQuestionId,
 }: QuestionCardType) => (
@@ -37,6 +39,7 @@ export const QuestionCard = ({
         ? "bg-gray-800 border-blue-500 rounded-lg border"
         : "bg-gray-800 hover:cursor-pointer rounded-lg border border-gray-700"
     }
+    onClick={() => handleCardClick(question.id)}
   >
     <CardContent className="py-1">
       <div className="flex items-center justify-between">
@@ -53,7 +56,10 @@ export const QuestionCard = ({
                 <Button
                   size="icon"
                   className="group rounded-lg p-2 hover:bg-yellow-400 hover:bg-opacity-5 shadow-lg"
-                  onClick={() => handleGenerateHint(question.id)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleGenerateHint(question.id);
+                  }}
                   disabled={isPending}
                 >
                   <Lightbulb className="w-5 h-5 text-white group-hover:text-yellow-400" />
@@ -63,14 +69,17 @@ export const QuestionCard = ({
                 className="p-2 bg-none rounded-full shadow-md border-none"
                 align="center"
               >
-                Answer Hints
+                Generate Hints
               </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   size="icon"
-                  onClick={() => handleAnswerStatusChange(question.id, true)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleAnswerStatusChange(question.id, true);
+                  }}
                   disabled={isPending}
                   className="group rounded-lg p-2 hover:bg-green-500 hover:bg-opacity-5 shadow-lg"
                 >

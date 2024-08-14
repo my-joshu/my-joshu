@@ -18,17 +18,26 @@ type AnsweredQuestionCardType = {
     questionId: number,
     isAnswered: boolean
   ) => Promise<void>;
+  handleCardClick: (questionId: number) => void;
   isPending: boolean;
+  selectedQuestionId: number | null;
 };
 
 export const AnsweredQuestionCard = ({
   question,
   handleAnswerStatusChange,
+  handleCardClick,
   isPending,
+  selectedQuestionId,
 }: AnsweredQuestionCardType) => (
   <Card
     key={question.uuid}
-    className="bg-gray-800 rounded-lg border border-gray-700"
+    className={
+      selectedQuestionId === question.id
+        ? "bg-gray-800 border-blue-500 rounded-lg border"
+        : "bg-gray-800 hover:cursor-pointer rounded-lg border border-gray-700"
+    }
+    onClick={() => handleCardClick(question.id)}
   >
     <CardContent className="py-1">
       <div className="flex items-center justify-between">
@@ -44,7 +53,10 @@ export const AnsweredQuestionCard = ({
               <TooltipTrigger asChild>
                 <Button
                   size="icon"
-                  onClick={() => handleAnswerStatusChange(question.id, false)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleAnswerStatusChange(question.id, false);
+                  }}
                   disabled={isPending}
                   className="group rounded-lg p-2 hover:bg-orange-500 hover:bg-opacity-5 shadow-lg"
                 >

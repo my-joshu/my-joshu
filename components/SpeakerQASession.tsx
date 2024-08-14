@@ -32,23 +32,24 @@ export default function SpeakerQASession({
   const [questions, setQuestions] = useState(serverQuestions);
   const [isPending, startTransition] = useTransition();
 
-  async function askGemini(
+  async function getAnswerHintsWithGemini(
     question: string,
-    presentationId: number
+    presentationId: number,
+    questionId: number
   ): Promise<{ ok: boolean; answer: string }> {
-    const response = await fetch(`/api/gemini`, {
+    const response = await fetch(`/api/answerHints`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ question, presentationId }),
+      body: JSON.stringify({ question, presentationId, questionId }),
     });
     const result = await response.json();
-    console.log("result", result);
 
     return result;
   }
 
+  // Create answer hints when clicking the answer hint icon
   const handleGenerateHint = async (questionId: number) => {
     setSelectedQuestionId(questionId);
 
@@ -57,7 +58,11 @@ export default function SpeakerQASession({
       if (!question) return;
 
       const questionContent = question.content;
-      const result = await askGemini(questionContent, question.presentation_id);
+      const result = await getAnswerHintsWithGemini(
+        questionContent,
+        question.presentation_id,
+        question.id
+      );
       setHint(result.answer);
     });
   };
@@ -88,6 +93,21 @@ export default function SpeakerQASession({
           : question
       )
     );
+  };
+
+  // Get answer hints from DB when selecting cards
+  const handleCardClick = async (questionId: number) => {
+    setSelectedQuestionId(questionId);
+
+    const response = await fetch(`/api/answerHints?questionId=${questionId}`);
+    const result = await response.json();
+
+    // Reset to avoid being confusing and show only corresponding answer hints
+    if (result.answer.length === 0) {
+      setHint(null);
+      return;
+    }
+    setHint(result.answer);
   };
 
   // Listen for new questions in real-time
@@ -196,7 +216,9 @@ export default function SpeakerQASession({
                     key={question.uuid}
                     question={question}
                     handleAnswerStatusChange={handleAnswerStatusChange}
+                    handleCardClick={handleCardClick}
                     isPending={isPending}
+                    selectedQuestionId={selectedQuestionId}
                   />
                 ) : (
                   <QuestionCard
@@ -204,6 +226,7 @@ export default function SpeakerQASession({
                     question={question}
                     handleAnswerStatusChange={handleAnswerStatusChange}
                     handleGenerateHint={handleGenerateHint}
+                    handleCardClick={handleCardClick}
                     isPending={isPending}
                     selectedQuestionId={selectedQuestionId}
                   />
