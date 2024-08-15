@@ -6,8 +6,7 @@ dotenv.config({ path: '.env.local' });
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'node',
-    setupFiles: './supabase/tests/setup.ts',
+    // setupFiles: './supabase/tests/setup.ts',
   },
   define: {
     'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL),
