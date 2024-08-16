@@ -3,6 +3,34 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { Tables } from "@/types/supabase";
 
+export async function GET(request: NextRequest) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user || user.is_anonymous) {
+    throw new Error("You must be logged in!");
+  }
+
+  const searchParams = request.nextUrl.searchParams;
+  const questionId = searchParams.get("questionId");
+
+  if (!questionId) {
+    throw new Error("questionId is required");
+  }
+
+  const { data } = await supabase
+    .from("question_answer_hints")
+    .select("*")
+    .eq("question_id", Number(questionId))
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single<Tables<"question_answer_hints">>();
+
+  return NextResponse.json({ ok: true, answer: data?.content || "" });
+}
+
 export async function POST(request: NextRequest) {
   const supabase = createClient();
   const {
@@ -13,13 +41,13 @@ export async function POST(request: NextRequest) {
     throw new Error("You must be logged in!");
   }
 
-  const { question, presentationId } = await request.json();
+  const { question, presentationId, questionId } = await request.json();
+
   const { data: presentation } = await supabase
     .from("presentations")
     .select("*")
     .eq("id", presentationId)
     .single<Tables<"presentations">>();
-  const start: Date = new Date();
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const systemInstruction = `
@@ -51,7 +79,10 @@ export async function POST(request: NextRequest) {
     - xxx
     - xxx
   `;
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001", systemInstruction });
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash-001",
+    systemInstruction,
+  });
 
   const prompt = `
   Generate helpful hints for answering the questions in the following question, using Markdown and bullet points.\n
@@ -59,19 +90,19 @@ export async function POST(request: NextRequest) {
   `;
 
   const result = await model.generateContent(prompt);
+  const answer = result.response.text();
 
-  console.log("text", result.response.text());
-  console.log("candidates", result.response.candidates);
+  const { data } = await supabase
+    .from("question_answer_hints")
+    .insert({ question_id: questionId, content: answer })
+    .select("*")
+    .single<Tables<"question_answer_hints">>();
 
-  const finish: Date = new Date();
-  console.log(
-    "start: ",
-    start,
-    ", finish: ",
-    finish,
-    ", diff: ",
-    `${finish.getTime() - start.getTime()} ms`
-  );
+  if (!data) {
+    console.error(
+      `Failed to create question_answer_hints questionId: ${questionId}`
+    );
+  }
 
-  return NextResponse.json({ ok: true, answer: result.response.text() });
+  return NextResponse.json({ ok: true, answer: answer });
 }

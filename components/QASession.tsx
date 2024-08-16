@@ -2,17 +2,26 @@
 
 import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
+import { ThumbsUp } from "lucide-react";
 import {
   REALTIME_LISTEN_TYPES,
   REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
 } from "@supabase/supabase-js";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Tables } from "@/types/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { createQuestionsInsertChannelName } from "@/utils/channelName";
+import { formatUtcToLocaleTime } from "@/utils/date";
+import { QuestionMeta } from "./QuestionMeta";
 
 // NOTE: Use resetKey to reset input form by server actions: https://github.com/vercel/next.js/discussions/58448#discussioncomment-8459474
 const initialState = {
@@ -21,7 +30,6 @@ const initialState = {
 };
 
 type FormStateType = typeof initialState;
-type IconProps = React.ComponentProps<"svg">;
 
 export function QASession({
   presentationId,
@@ -104,50 +112,54 @@ export function QASession({
             </div>
           </form>
           <div className="overflow-y-auto space-y-2 rounded-lg">
-            {questions.map((q) => (
+            {questions.map((question) => (
               <Card
-                key={q.uuid}
-                className="bg-gray-800 text-white rounded-lg px-2 border border-gray-700"
+                key={question.uuid}
+                className="bg-gray-800 text-white rounded-lg border border-gray-700"
               >
-                <CardContent className="p-2">
+                <CardContent className="py-1">
                   <div className="flex items-center justify-between">
-                    <div className="flex-1 overflow-hidden">
-                      <p className="text-lg break-words">{q.content}</p>
+                    <div className="flex flex-col text-left">
+                      <QuestionMeta
+                        author={"Anonymous"}
+                        timestamp={formatUtcToLocaleTime(question.created_at)}
+                      />
                     </div>
-                    <Button variant="ghost" size="icon" className="ml-2">
-                      <ThumbsUpIcon className="w-5 h-5" />
-                      <span className="sr-only">Upvote</span>
-                    </Button>
+                    <div className="flex space-x-2 items-center">
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="icon"
+                              className="group rounded-lg p-2 hover:bg-green-500 hover:bg-opacity-5 shadow-lg"
+                            >
+                              <ThumbsUp className="w-5 h-5 text-white group-hover:text-green-500" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            className="p-2 bg-none rounded-full shadow-md border-none"
+                            align="center"
+                          >
+                            Upvote
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        10 upvotes
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-hidden py-1">
+                    <p className="break-words text-lg text-white">
+                      {question.content}
+                    </p>
                   </div>
                 </CardContent>
-                <CardFooter className="p-2">
-                  <div className="text-sm text-gray-400">10 upvotes</div>
-                </CardFooter>
               </Card>
             ))}
           </div>
         </div>
       </main>
     </div>
-  );
-}
-
-function ThumbsUpIcon(props: IconProps) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M7 10v12" />
-      <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z" />
-    </svg>
   );
 }

@@ -83,20 +83,26 @@ export type Database = {
       question_answer_hints: {
         Row: {
           content: string
+          created_at: string
           id: number
           question_id: number
+          updated_at: string
           uuid: string
         }
         Insert: {
           content: string
+          created_at?: string
           id?: number
           question_id: number
+          updated_at?: string
           uuid?: string
         }
         Update: {
           content?: string
+          created_at?: string
           id?: number
           question_id?: number
+          updated_at?: string
           uuid?: string
         }
         Relationships: [

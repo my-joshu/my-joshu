@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { Tables } from "@/types/supabase";
 import { createPresentation } from "@/app/presentations/actions";
-import { formatUtcToLocaleTimezone } from "@/utils/date";
+import { formatUtcToLocaleDate } from "@/utils/date";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -82,7 +82,7 @@ export function PresentationDashboard({
                       {presentation.title}
                     </h3>
                     <p className="text-gray-400 text-sm">
-                      {formatUtcToLocaleTimezone(presentation.start_time)}
+                      {formatUtcToLocaleDate(presentation.start_time)}
                     </p>
                   </div>
                 </div>

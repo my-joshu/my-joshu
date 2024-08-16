@@ -2,24 +2,18 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { RefreshCcwIcon } from "lucide-react";
-import AnswerHint from "./AnswerHint";
 import {
   REALTIME_LISTEN_TYPES,
   REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
 } from "@supabase/supabase-js";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tables } from "@/types/supabase";
 import { createClient } from "@/utils/supabase/client";
 import { createQuestionsInsertChannelName } from "@/utils/channelName";
+import AnswerHint from "./AnswerHint";
+import { QuestionCard } from "./QuestionCard";
+import { AnsweredQuestionCard } from "./AnsweredQuestionCard";
 
 export default function SpeakerQASession({
   presentationId,
@@ -35,40 +29,85 @@ export default function SpeakerQASession({
     null
   );
   const [hint, setHint] = useState<string | null>(null);
-  const [activeCardId, setActiveCardId] = useState<number | null>(null);
   const [questions, setQuestions] = useState(serverQuestions);
   const [isPending, startTransition] = useTransition();
 
-  async function askGemini(
+  async function getAnswerHintsWithGemini(
     question: string,
-    presentationId: number
+    presentationId: number,
+    questionId: number
   ): Promise<{ ok: boolean; answer: string }> {
-    const response = await fetch(`/api/gemini`, {
+    const response = await fetch(`/api/answerHints`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ question, presentationId }),
+      body: JSON.stringify({ question, presentationId, questionId }),
     });
     const result = await response.json();
-    console.log("result", result);
 
     return result;
   }
 
+  // Create answer hints when clicking the answer hint icon
   const handleGenerateHint = async (questionId: number) => {
     setSelectedQuestionId(questionId);
 
     startTransition(async () => {
-      const question = questions[questionId];
+      const question = questions.find((q) => q.id === questionId);
+      if (!question) return;
+
       const questionContent = question.content;
-      const result = await askGemini(questionContent, question.presentation_id);
+      const result = await getAnswerHintsWithGemini(
+        questionContent,
+        question.presentation_id,
+        question.id
+      );
       setHint(result.answer);
     });
   };
 
-  const handleCardClick = (questionId: number) => {
-    setActiveCardId(questionId);
+  const handleAnswerStatusChange = async (
+    questionId: number,
+    isAnswered: boolean
+  ): Promise<void> => {
+    const response = await fetch(`/api/questions/${questionId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answered: isAnswered }),
+    });
+
+    const result: {
+      ok: boolean;
+      message: string;
+    } = await response.json();
+
+    if (!result.ok) {
+      return console.error(result.message);
+    }
+
+    setQuestions((prevQuestions) =>
+      prevQuestions.map((question) =>
+        question.id === questionId
+          ? { ...question, answered: isAnswered }
+          : question
+      )
+    );
+  };
+
+  // Get answer hints from DB when selecting cards
+  const handleCardClick = async (questionId: number) => {
+    setSelectedQuestionId(questionId);
+
+    const response = await fetch(`/api/answerHints?questionId=${questionId}`);
+    const result = await response.json();
+
+    // Reset to avoid being confusing and show only corresponding answer hints
+    if (result.answer.length === 0) {
+      setHint(null);
+      return;
+    }
+    setHint(result.answer);
   };
 
   // Listen for new questions in real-time
@@ -171,51 +210,28 @@ export default function SpeakerQASession({
               className="space-y-2 overflow-y-auto hover:overflow-y-scroll rounded-lg"
               style={{ maxHeight: "calc(100vh - 200px)" }}
             >
-              {questions.map((question, idx) => (
-                <Card
-                  key={question.uuid}
-                  className={
-                    activeCardId === idx
-                      ? "bg-gray-800 border-blue-500 rounded-lg px-2 border"
-                      : "bg-gray-800 hover:cursor-pointer rounded-lg px-2 border border-gray-700"
-                  }
-                >
-                  <CardContent
-                    onClick={() => handleCardClick(idx)}
-                    className="p-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 overflow-hidden">
-                        <p className="break-words text-lg text-white">
-                          {question.content}
-                        </p>
-                      </div>
-                      <Button
-                        size="icon"
-                        className="ml-2 rounded-lg p-2 hover:bg-gray-600 shadow-lg"
-                        onClick={() => handleGenerateHint(idx)}
-                        disabled={isPending}
-                      >
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <RefreshCcwIcon className="w-6 h-6 text-white" />
-                            </TooltipTrigger>
-                            <TooltipContent className="p-2 bg-none rounded-full shadow-md border-none">
-                              <p>Generate Answer Hints</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </Button>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="p-2">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      10 upvotes
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
+              {questions.map((question) =>
+                question.answered ? (
+                  <AnsweredQuestionCard
+                    key={question.uuid}
+                    question={question}
+                    handleAnswerStatusChange={handleAnswerStatusChange}
+                    handleCardClick={handleCardClick}
+                    isPending={isPending}
+                    selectedQuestionId={selectedQuestionId}
+                  />
+                ) : (
+                  <QuestionCard
+                    key={question.uuid}
+                    question={question}
+                    handleAnswerStatusChange={handleAnswerStatusChange}
+                    handleGenerateHint={handleGenerateHint}
+                    handleCardClick={handleCardClick}
+                    isPending={isPending}
+                    selectedQuestionId={selectedQuestionId}
+                  />
+                )
+              )}
             </div>
           </div>
         </div>
