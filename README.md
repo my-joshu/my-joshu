@@ -1,31 +1,71 @@
 # MyJoshu
 
+Welcome to MyJoshu, an open-source AI-powered tool designed to enhance your presentation Q&A sessions with confidence.
+
+https://github.com/user-attachments/assets/e7fcedd5-fc87-4888-996a-e4ad7c4d33db
+
+## Features
+
+- **Tailored Answer Hints**: Get AI-driven suggestions for unexpected or anticipated questions.
+- **Audience Live Q&A**: Engage your audience in real-time.
+- **Efficient Management**: Real-time updates and seamless question handling.
+
+## Built with
+
+- [Next.js](https://nextjs.org/)
+- [Supabase](https://supabase.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Gemini API](https://ai.google.dev/)
+
 ## Setup
 
-### Supabase
+### Prerequisites
 
-```bash
-pnpm supabase login
-pnpm supabase link --project-ref xxx
-```
+Set up accounts and obtain API keys for:
 
-Start Supabase
+- Supabase
+- Vercel (For production use)
+- Gemini API
 
-```bash
-$ pnpm supabase start
+### Local Setup
 
-Started supabase local development setup.
+Follow these steps to set up MyJoshu on your local machine:
 
-         API URL: http://127.0.0.1:54321
-     GraphQL URL: http://127.0.0.1:54321/graphql/v1
-          DB URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
-      Studio URL: http://127.0.0.1:54323
-    Inbucket URL: http://127.0.0.1:54324
-```
+- Clone the Repository
 
-Setup Database
+  ```shell
+  git clone git@github.com:my-joshu/my-joshu.git
+  ```
 
-```bash
-pnpm supabase migration up
-pnpm supabase db reset --debug
-```
+- Navigate to the Project Directory
+
+  ```shell
+  cd my-joshu
+  ```
+
+- Install Dependencies
+
+  ```shell
+  pnpm i
+  ```
+
+- Setup Supabase
+
+  ```shell
+  pnpm supabase start
+  ```
+
+  ```shell
+  pnpm supabase migration up
+  ```
+
+- Configure Environment Variables
+
+  - Copy `.env.example` to `.env.local`.
+  - Fill in your API keys and URLs.
+
+- Run the Next.js Server
+
+  ```shell
+  pnpm run dev
+  ```

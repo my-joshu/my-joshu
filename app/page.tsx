@@ -52,16 +52,16 @@ export default async function Index() {
             </h2>
             <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <li className="bg-gray-800 p-6 rounded-lg flex items-center space-x-3">
-                <span className="text-2xl">⚡</span>
-                <span className="font-medium">Real-time AI Assistance</span>
+                <span className="text-2xl">🎯</span>
+                <span className="font-medium">Tailored Answer Hints</span>
               </li>
               <li className="bg-gray-800 p-6 rounded-lg flex items-center space-x-3">
                 <span className="text-2xl">⏱️</span>
                 <span className="font-medium">Audience Live Q&A</span>
               </li>
               <li className="bg-gray-800 p-6 rounded-lg flex items-center space-x-3">
-                <span className="text-2xl">🎯</span>
-                <span className="font-medium">Tailored Answer Hints</span>
+                <span className="text-2xl">⚡</span>
+                <span className="font-medium">Efficient Management</span>
               </li>
             </ul>
           </section>
