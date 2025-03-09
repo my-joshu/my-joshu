@@ -1,24 +1,45 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { Tables } from "@/types/supabase";
+import { z } from "zod";
+import { aiService } from "@/services/ai";
+import { logger } from "@/services/logger";
+import { withErrorHandling, createApiError } from "../middleware";
 
-export async function GET(request: NextRequest) {
+// Schema for GET request query parameters
+const GetQuerySchema = z.object({
+  questionId: z.string().min(1, "Question ID is required"),
+});
+
+// Schema for POST request body
+const PostBodySchema = z.object({
+  question: z.string().min(1, "Question is required"),
+  presentationId: z.coerce.string().min(1, "Presentation ID is required"),
+  questionId: z.coerce.number().int().positive("Question ID must be a positive integer"),
+});
+
+export const GET = withErrorHandling(async function GET(request: NextRequest) {
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user || user.is_anonymous) {
-    throw new Error("You must be logged in!");
+    createApiError("unauthorized", "You must be logged in!", 401);
   }
 
   const searchParams = request.nextUrl.searchParams;
-  const questionId = searchParams.get("questionId");
 
-  if (!questionId) {
-    throw new Error("questionId is required");
+  // Validate query parameters
+  const queryResult = GetQuerySchema.safeParse({
+    questionId: searchParams.get("questionId"),
+  });
+
+  if (!queryResult.success) {
+    createApiError("validation_error", queryResult.error.message, 400, queryResult.error.format());
   }
+
+  const { questionId } = queryResult.data;
 
   const { data } = await supabase
     .from("question_answer_hints")
@@ -29,19 +50,29 @@ export async function GET(request: NextRequest) {
     .single<Tables<"question_answer_hints">>();
 
   return NextResponse.json({ ok: true, answer: data?.content || "" });
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandling(async function POST(request: NextRequest) {
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user || user.is_anonymous) {
-    throw new Error("You must be logged in!");
+    createApiError("unauthorized", "You must be logged in!", 401);
   }
 
-  const { question, presentationId, questionId } = await request.json();
+  // Validate request body
+  const requestBody = await request.json().catch(() => ({}));
+  const bodyResult = PostBodySchema.safeParse(requestBody);
+
+  if (!bodyResult.success) {
+    createApiError("validation_error", "Invalid request data", 400, bodyResult.error.format());
+  }
+
+  const { question, presentationId, questionId } = bodyResult.data;
+
+  logger.info({ questionId, presentationId }, "Processing answer hint generation");
 
   const { data: presentation } = await supabase
     .from("presentations")
@@ -49,48 +80,22 @@ export async function POST(request: NextRequest) {
     .eq("id", presentationId)
     .single<Tables<"presentations">>();
 
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-  const systemInstruction = `
-  You are an AI assistant designed to help presentation speakers smoothly answer questions during Q&A sessions. Follow the instructions below to generate helpful hints for answering questions.
+  // Get hint using AI service
+  const presentationContent = presentation?.description || '';
 
-  1. The presentation slide content will be provided as follows. Use this content to generate your hints.
-    - Slide content: ${presentation?.description}
-
-  2. Generate helpful hints for answering the questions in the following format, using Markdown and bullet points.
-    - Question: ${question}
-
-  3. When generating hints, keep the following points in mind:
-    - Reflect the main points of the presentation.
-    - Use concise and clear expressions.
-    - Make sure the hints are easy for the speaker to understand and respond to immediately.
-
-  Example:
-  ## Hints:
-    ### Main features: High-speed data processing engine
-    - xxx
-    - xxx
-    - xxx
-    ### Specific examples of features: Real-time data analytics
-    - xxx
-    - xxx
-    - xxx
-    ### Advantages: Scalable architecture
-    - xxx
-    - xxx
-    - xxx
-  `;
-  const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash-001",
-    systemInstruction,
+  const hintResult = await aiService.generateHint({
+    presentationContent,
+    question,
+    maxTokens: 1024,
+    temperature: 0.7,
   });
 
-  const prompt = `
-  Generate helpful hints for answering the questions in the following question, using Markdown and bullet points.\n
-  ${question}
-  `;
+  if (hintResult.error) {
+    logger.error({ error: hintResult.error, questionId }, "Failed to generate answer hint");
+    createApiError("ai_generation_error", "Failed to generate answer hint", 500, hintResult.error);
+  }
 
-  const result = await model.generateContent(prompt);
-  const answer = result.response.text();
+  const answer = hintResult.hint;
 
   const { data } = await supabase
     .from("question_answer_hints")
@@ -99,10 +104,10 @@ export async function POST(request: NextRequest) {
     .single<Tables<"question_answer_hints">>();
 
   if (!data) {
-    console.error(
-      `Failed to create question_answer_hints questionId: ${questionId}`
-    );
+    logger.error({ questionId }, "Failed to create question_answer_hints record");
+    createApiError("database_error", "Failed to save answer hint", 500);
   }
 
-  return NextResponse.json({ ok: true, answer: answer });
-}
+  logger.info({ questionId }, "Successfully generated and saved answer hint");
+  return NextResponse.json({ ok: true, answer });
+});
