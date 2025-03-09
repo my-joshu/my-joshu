@@ -1,0 +1,163 @@
+# Cline Rules for MyJoshu
+
+This document captures important patterns, preferences, and project intelligence for the MyJoshu project. It serves as a learning journal to help work more effectively with the codebase and project requirements.
+
+## Security
+
+### Sensitive Files
+
+DO NOT read or modify:
+
+- .env & .env.local files
+- \*_/config/secrets._
+- \*_/_.pem
+- Any file containing API keys, tokens, or credentials
+
+### Security Practices
+
+- Never commit sensitive files
+- Use environment variables for secrets
+- Keep credentials out of logs and output
+
+## Code Organization
+
+1. **File Structure**
+
+   - App router-based Next.js structure with `/app` directory
+   - Components in `/components` directory
+   - Utility functions in `/utils` directory
+   - Supabase configuration in `/supabase` directory
+   - Types in `/types` directory
+
+2. **Component Patterns**
+
+   - UI components in `/components/ui` directory
+   - Page-specific components in the root of `/components`
+   - "use client" directive for client components
+   - Server components by default
+
+3. **API Structure**
+   - API routes in `/app/api` directory
+   - Route handlers using Next.js App Router conventions
+   - Supabase client initialization in API routes
+
+## Styling Patterns
+
+1. **Tailwind CSS**
+
+   - Utility-first approach for styling
+   - Custom color scheme with blue/teal gradient for primary elements
+   - Dark theme with gray-900 background and white text
+   - Responsive design with mobile-first approach
+
+2. **UI Components**
+
+   - Based on Radix UI primitives
+   - Consistent styling across components
+   - Custom UI components in `/components/ui`
+
+3. **Design System**
+   - Consistent spacing and sizing
+   - Rounded corners (rounded-lg) for cards and buttons
+   - Gradient backgrounds for primary actions
+   - Gray-800 for secondary elements
+
+## Data Flow Patterns
+
+1. **Server Actions**
+
+   - Form submissions using server actions
+   - Binding arguments to server actions
+   - Returning state for form reset
+
+2. **Real-time Updates**
+
+   - Supabase real-time channels for live updates
+   - Channel naming convention in `utils/channelName.ts`
+   - Initial server-side data fetch followed by client-side updates
+
+3. **Authentication Flow**
+   - Supabase authentication
+   - Anonymous access for attendees
+   - Protected routes for speakers
+
+## Error Handling
+
+1. **API Error Handling**
+
+   - Consistent error response format
+   - Error logging in server-side code
+   - Client-side error state management
+
+2. **Form Validation**
+   - Required fields marked with HTML required attribute
+   - Form state for error messages
+   - Validation before submission
+
+## Testing Approach
+
+1. **Unit Tests**
+   - Vitest for testing
+   - Focus on utility functions
+   - Test files co-located with implementation
+
+## Project Preferences
+
+1. **Code Style**
+
+   - TypeScript for type safety
+   - Functional components with hooks
+   - Server components where possible
+   - Client components only when necessary
+
+2. **Documentation**
+
+   - Comments for complex logic
+   - Type definitions for better code understanding
+   - README for project overview
+
+3. **Development Workflow**
+   - Local Supabase instance for development
+   - Database migrations for schema changes
+   - pnpm as package manager
+
+## Critical Implementation Paths
+
+1. **Question Submission Flow**
+
+   - Attendee submits question via QASession component
+   - Server action creates question in database
+   - Real-time channel broadcasts to SpeakerQASession
+   - Speaker sees question and can generate hints
+
+2. **Answer Hint Generation**
+
+   - Speaker clicks generate hint button
+   - Request sent to answerHints API
+   - Gemini API generates contextual hints
+   - Hint stored in database and displayed to speaker
+
+3. **Presentation Creation**
+   - Speaker creates presentation via PresentationDashboard
+   - Uploads presentation slides for content extraction
+   - Server action creates presentation in database
+   - QR code generated for attendee access
+
+## Known Challenges
+
+1. **AI Response Quality**
+
+   - Hint quality depends on presentation content quality
+   - Need for better prompt engineering
+   - Balancing response time and quality
+
+2. **Real-time Performance**
+
+   - Handling high volume of questions
+   - Reconnection strategies for network issues
+   - Optimizing for mobile networks
+
+3. **File Processing**
+   - Extracting text from different presentation formats
+   - Handling large files
+   - Processing time for content extraction
