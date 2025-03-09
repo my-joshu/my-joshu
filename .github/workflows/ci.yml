@@ -20,6 +20,26 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: 9
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase
+        run: supabase start -x storage-api,imgproxy,inbucket,studio,edge-runtime
+
+      - name: DB reset
+        run: supabase db reset
+
+      - name: Set environment variables for vitest
+        run: |
+          supabase status > supabase_status.txt
+          while IFS= read -r line; do
+            case $line in
+              *"API URL:"*) echo "NEXT_PUBLIC_SUPABASE_URL=${line##* }" >> .env ;;
+              *"anon key:"*) echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${line##* }" >> .env ;;
+            esac
+          done < supabase_status.txt
+          rm supabase_status.txt
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
