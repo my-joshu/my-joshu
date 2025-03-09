@@ -25,25 +25,25 @@ The MyJoshu project is currently in its initial setup phase. The core architectu
 
 ## Recent Changes
 
-As this is the initial setup of the memory bank, there are no specific recent changes to document. The project structure has been established with the following key components:
+1. **Service Layer Implementation**
 
-1. **Frontend Components**
+   - Created a centralized service layer for key functionalities
+   - Implemented AI service for Gemini integration
+   - Added real-time subscription management service
+   - Developed slides-to-text service for presentation content extraction
+   - Implemented structured logging with pino
 
-   - PresentationDashboard for managing presentations
-   - QASession for attendee question submission
-   - SpeakerQASession for speaker question management
-   - AnswerHint for displaying AI-generated hints
+2. **API Improvements**
 
-2. **Backend Services**
+   - Added middleware for consistent error handling
+   - Implemented request validation with Zod
+   - Enhanced logging for API requests and errors
+   - Refactored answer hints API to use the new service layer
 
-   - Supabase integration for database and authentication
-   - API routes for answer hint generation
-   - Real-time channels for live updates
-
-3. **Database Schema**
-   - Tables for speakers, attendees, presentations, questions, and answer hints
-   - Relationships between entities
-   - Indexes for efficient queries
+3. **Testing Infrastructure**
+   - Set up Vitest configuration
+   - Implemented unit tests for the slides-to-text service
+   - Added testing utilities and mocks
 
 ## Next Steps
 
@@ -63,9 +63,9 @@ The following steps are planned for the immediate future:
 
 3. **Testing and Validation**
 
-   - Implement comprehensive testing
-   - Gather user feedback
-   - Iterate based on user testing
+   - Expand test coverage across services
+   - Implement integration tests for key flows
+   - Gather user feedback and iterate
 
 4. **Security**
 
@@ -88,13 +88,19 @@ Several key decisions and considerations are currently being evaluated:
    - Evaluating performance and cost
    - Considering alternatives or fallbacks
 
-2. **Real-time Performance**
+2. **Service Layer Design**
+
+   - Centralizing key functionalities in dedicated services
+   - Ensuring good separation of concerns
+   - Balancing modularity with complexity
+
+3. **Real-time Performance**
 
    - Monitoring Supabase real-time performance
    - Considering optimizations for high-volume scenarios
    - Evaluating scaling strategies
 
-3. **Authentication Flow**
+4. **Authentication Flow**
 
    - Current implementation uses Supabase Auth
    - Considering additional authentication providers
@@ -103,13 +109,13 @@ Several key decisions and considerations are currently being evaluated:
      - Using Passkey
    - Evaluating security best practices
 
-4. **Data Privacy**
+5. **Data Privacy**
 
    - Ensuring compliance with data protection regulations
    - Implementing appropriate data retention policies
    - Securing sensitive information
 
-5. **Deployment Strategy**
+6. **Deployment Strategy**
    - Planning for production deployment
      - Currently using Vercel for hosting of Next.js application with React Server Components and server actions
      - How to run Next.js app on Google Cloud Run or AWS Lambda to avoid vendor lock-in
